@@ -59,6 +59,14 @@ export interface Metrics {
   updated_at: string;
 }
 
+export interface UserRole {
+  id: string;
+  email: string;
+  role: "admin" | "partner";
+  project_slug: string | null;
+  created_at: string;
+}
+
 // Supabase Database shape for typed client
 export interface Database {
   public: {

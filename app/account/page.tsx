@@ -7,10 +7,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Footer from "@/app/components/Footer";
 
-// Impact rate constants — swap for per-project rates in future phases
-const KG_PER_USD = 12;
-const WORK_DAYS_PER_USD = 0.5;
-
 function GoogleLogo() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
@@ -114,19 +110,21 @@ export default function AccountPage() {
   const router = useRouter();
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [totalKg, setTotalKg] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session?.user) { setLoading(false); return; }
-      setUser({ email: session.user.email ?? "" });
+      const email = session.user.email ?? "";
+      setUser({ email });
 
-      const { data } = await supabase
-        .from("donations")
-        .select("*")
-        .eq("donor_email", session.user.email ?? "")
-        .order("created_at", { ascending: false });
-      setDonations(data ?? []);
+      const [{ data: donationsData }, { data: donorData }] = await Promise.all([
+        supabase.from("donations").select("*").eq("donor_email", email).order("created_at", { ascending: false }),
+        supabase.from("donors").select("total_kg_removed").eq("email", email).maybeSingle(),
+      ]);
+      setDonations(donationsData ?? []);
+      setTotalKg(donorData?.total_kg_removed ?? 0);
       setLoading(false);
     });
   }, []);
@@ -149,12 +147,9 @@ export default function AccountPage() {
 
   if (!user) return <SignInScreen />;
 
-  // Impact calculations — confirmed donations only
   const confirmedTotal = donations
     .filter((d) => d.status === "confirmed")
     .reduce((s, d) => s + d.amount_usd, 0);
-  const kgRemoved = Math.round(confirmedTotal * KG_PER_USD);
-  const workDays = Math.round(confirmedTotal * WORK_DAYS_PER_USD * 10) / 10;
 
   const hasPending = donations.some((d) => d.status === "pending");
 
@@ -185,30 +180,24 @@ export default function AccountPage() {
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-3">
-              {/* KG removed */}
               <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-center">
                 <div className="text-3xl mb-3">🗑️</div>
                 <div className="font-[var(--font-dm-serif)] text-5xl sm:text-6xl mb-1" style={{ color: "#24B5CB" }}>
-                  {kgRemoved.toLocaleString()}
+                  {totalKg.toLocaleString()}
                 </div>
                 <p className="text-[#4B5563] text-sm font-semibold">kg of plastic removed</p>
-                <p className="text-[#9CA3AF] text-xs mt-1">from Lombok's coastline & ocean</p>
+                <p className="text-[#9CA3AF] text-xs mt-1">from Lombok&apos;s coastline &amp; ocean</p>
               </div>
 
-              {/* Work days */}
               <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-center">
-                <div className="text-3xl mb-3">👷</div>
+                <div className="text-3xl mb-3">💵</div>
                 <div className="font-[var(--font-dm-serif)] text-5xl sm:text-6xl mb-1" style={{ color: "#1A7A8A" }}>
-                  {workDays.toLocaleString()}
+                  ${confirmedTotal.toLocaleString()}
                 </div>
-                <p className="text-[#4B5563] text-sm font-semibold">days of fair-wage work</p>
-                <p className="text-[#9CA3AF] text-xs mt-1">created for local workers</p>
+                <p className="text-[#4B5563] text-sm font-semibold">confirmed donations</p>
+                <p className="text-[#9CA3AF] text-xs mt-1">total USD contributed</p>
               </div>
             </div>
-
-            <p className="text-center text-xs text-[#9CA3AF]">
-              ~{KG_PER_USD} kg removed · ~{WORK_DAYS_PER_USD} work-days funded per USD donated
-            </p>
           </section>
 
           {/* Giving history */}

@@ -61,6 +61,14 @@ create table if not exists metrics (
   updated_at timestamptz default now()
 );
 
+create table if not exists user_roles (
+  id uuid primary key default gen_random_uuid(),
+  email text unique not null,
+  role text not null check (role in ('admin', 'partner')),
+  project_slug text references projects(slug) on delete set null,
+  created_at timestamptz default now()
+);
+
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
@@ -70,6 +78,8 @@ alter table donors enable row level security;
 alter table donations enable row level security;
 alter table activities enable row level security;
 alter table metrics enable row level security;
+alter table user_roles enable row level security;
+-- user_roles: no public read — service role only (accessed via API routes)
 
 -- Projects, activities, metrics: public read
 create policy "Projects are publicly readable" on projects for select using (true);
@@ -89,6 +99,19 @@ create policy "Donors can read own donations" on donations for select using (don
 
 -- Projects
 insert into projects (slug, name, partner, location, status, category, kpis, raised, goal, image_url, since_year, description) values
+(
+  'general',
+  'WaveNova General Fund',
+  'WaveNova',
+  'Lombok, Indonesia',
+  'Operational',
+  'Sorting Stations',
+  '["Flexible allocation", "Highest impact", "All stations"]',
+  0, 10000,
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=70',
+  '2026',
+  'Donations to the General Fund are allocated by the WaveNova team to where they are needed most across all active projects and stations.'
+),
 (
   'selong-belanak',
   'Selong Belanak Station',

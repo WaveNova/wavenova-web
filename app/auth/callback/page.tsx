@@ -13,7 +13,20 @@ function CallbackHandler() {
     const next = searchParams.get("next") ?? "/#donate";
 
     if (code) {
-      supabase.auth.exchangeCodeForSession(code).then(() => {
+      supabase.auth.exchangeCodeForSession(code).then(async ({ data }) => {
+        const token = data.session?.access_token;
+        if (token) {
+          try {
+            const res = await fetch("/api/auth/role", {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const { role } = await res.json();
+            if (role === "admin") { router.replace("/admin"); return; }
+            if (role === "partner") { router.replace("/partner"); return; }
+          } catch {
+            // fall through to default redirect
+          }
+        }
         router.replace(next);
       });
     } else {

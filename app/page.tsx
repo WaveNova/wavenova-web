@@ -2,7 +2,6 @@ import Hero from "./components/Hero";
 import ProjectGrid from "./components/ProjectGrid";
 import HowItWorks from "./components/HowItWorks";
 import ImpactDashboard from "./components/ImpactDashboard";
-import Stories from "./components/Stories";
 import DonationSection from "./components/DonationSection";
 import Footer from "./components/Footer";
 
@@ -15,7 +14,6 @@ export default function Home() {
       <ProjectGrid projects={[]} />
       <HowItWorks />
       <ImpactDashboard metrics={null} activities={[]} />
-      <Stories />
       <DonationSection id="donate" projects={[]} />
       <Footer />
     </main>
