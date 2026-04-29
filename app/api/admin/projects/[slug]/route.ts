@@ -9,7 +9,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ sl
 
   const { slug } = await params;
   const body = await req.json();
-  const allowed = ["raised", "status", "description", "goal"];
+  const allowed = ["raised", "status", "description", "goal", "kpis", "image_url"];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in body) update[key] = body[key];

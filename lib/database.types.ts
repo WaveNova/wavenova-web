@@ -59,6 +59,19 @@ export interface Metrics {
   updated_at: string;
 }
 
+export type CampaignStatus = "active" | "completed" | "archived";
+
+export interface Campaign {
+  id: string;
+  project_slug: string;
+  name: string;
+  description: string | null;
+  goal: number;
+  raised: number;
+  status: CampaignStatus;
+  created_at: string;
+}
+
 export interface UserRole {
   id: string;
   email: string;

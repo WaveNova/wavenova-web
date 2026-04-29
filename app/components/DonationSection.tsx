@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Lock, ChevronDown, Copy, Check } from "lucide-react";
-import type { Project } from "@/lib/database.types";
+import type { Project, Campaign } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
 
 const PRESETS = [10, 25, 50, 100];
@@ -216,6 +216,8 @@ export default function DonationSection({ id, projects }: { id?: string; project
   const [custom, setCustom] = useState("");
   const [frequency, setFrequency] = useState<Frequency>("one-time");
   const [projectSlug, setProjectSlug] = useState("general");
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaignId, setCampaignId] = useState<string | null>(null);
   const [tip, setTip] = useState(false);
   const [donorName, setDonorName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -248,6 +250,28 @@ export default function DonationSection({ id, projects }: { id?: string; project
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Read ?project= and ?campaign= from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pSlug = params.get("project");
+    const cId = params.get("campaign");
+    if (pSlug) setProjectSlug(pSlug);
+    if (cId) setCampaignId(cId);
+  }, []);
+
+  // Fetch campaigns when project changes
+  useEffect(() => {
+    if (!projectSlug || projectSlug === "general") { setCampaigns([]); setCampaignId(null); return; }
+    fetch(`/api/campaigns/by-project/${projectSlug}`)
+      .then((r) => r.json())
+      .then(({ campaigns: c }) => {
+        setCampaigns(c ?? []);
+        // If a campaign was pre-selected via URL, keep it; else clear
+        setCampaignId((prev) => (c ?? []).find((x: Campaign) => x.id === prev) ? prev : null);
+      })
+      .catch(() => setCampaigns([]));
+  }, [projectSlug]);
 
   const effectiveAmount = custom ? parseFloat(custom) || 0 : amount;
   const totalAmount = effectiveAmount + (tip ? 2 : 0);
@@ -284,6 +308,7 @@ export default function DonationSection({ id, projects }: { id?: string; project
           amountUsd: effectiveAmount,
           frequency,
           tipAmount: tip ? 2 : 0,
+          ...(campaignId ? { campaignId } : {}),
         }),
       });
       const data = await res.json();
@@ -380,6 +405,36 @@ export default function DonationSection({ id, projects }: { id?: string; project
                   <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] pointer-events-none" />
                 </div>
               </div>
+
+              {/* Campaign picker */}
+              {campaigns.length > 0 && (
+                <div>
+                  <label className="block text-xs font-semibold text-[#1F2937] mb-2">Choose a Campaign (optional)</label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
+                      style={{ borderColor: !campaignId ? "#24B5CB" : "#D1D5DB", background: !campaignId ? "#EDF9FB" : "#fff" }}>
+                      <input type="radio" name="campaign" checked={!campaignId} onChange={() => setCampaignId(null)} className="accent-[#24B5CB]" />
+                      <span className="text-sm font-medium text-[#1F2937]">No preference — general project fund</span>
+                    </label>
+                    {campaigns.filter((c) => c.status === "active").map((c) => {
+                      const cpct = Math.min(Math.round((c.raised / c.goal) * 100), 100);
+                      return (
+                        <label key={c.id} className="flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors"
+                          style={{ borderColor: campaignId === c.id ? "#24B5CB" : "#D1D5DB", background: campaignId === c.id ? "#EDF9FB" : "#fff" }}>
+                          <input type="radio" name="campaign" checked={campaignId === c.id} onChange={() => setCampaignId(c.id)} className="accent-[#24B5CB] mt-0.5" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[#1F2937]">{c.name}</p>
+                            <p className="text-xs text-[#6B7280]">${c.raised.toLocaleString()} of ${c.goal.toLocaleString()} · {cpct}% funded</p>
+                            <div className="mt-1 h-1 rounded-full bg-[#E5E7EB]">
+                              <div className="h-full rounded-full" style={{ width: `${cpct}%`, background: "#24B5CB" }} />
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Frequency toggle */}
               <div>

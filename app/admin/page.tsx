@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
-import type { Donation, Project, UserRole } from "@/lib/database.types";
+import type { Donation, Project, UserRole, Campaign } from "@/lib/database.types";
 
 type Tab = "Donations" | "Projects" | "Metrics" | "Partners";
 
@@ -139,91 +139,302 @@ function DonationsTab({ token }: { token: string }) {
 
 const PROJECT_STATUS_OPTIONS = ["Operational", "Just Launched", "Launching May"];
 
+function KpiEditor({ kpis, onChange }: { kpis: string[]; onChange: (next: string[]) => void }) {
+  const [input, setInput] = useState("");
+  const add = () => {
+    const v = input.trim();
+    if (v && !kpis.includes(v)) { onChange([...kpis, v]); setInput(""); }
+  };
+  return (
+    <div>
+      <div className="flex flex-wrap gap-2 mb-2">
+        {kpis.map((k) => (
+          <span key={k} className="flex items-center gap-1 text-xs bg-[#EDF9FB] text-[#1A7A8A] px-2.5 py-1 rounded-full font-medium">
+            {k}
+            <button type="button" onClick={() => onChange(kpis.filter((x) => x !== k))} className="hover:text-red-500 ml-0.5 leading-none">✕</button>
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          type="text" value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+          placeholder="New KPI…"
+          className="flex-1 border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]"
+        />
+        <button type="button" onClick={add}
+          className="px-3 py-1.5 rounded-lg text-sm font-medium text-white"
+          style={{ background: "#24B5CB" }}
+        >Add</button>
+      </div>
+    </div>
+  );
+}
+
+const CAMPAIGN_STATUS_OPTIONS: Campaign["status"][] = ["active", "completed", "archived"];
+
+function ProjectCampaigns({ projectSlug, token }: { projectSlug: string; token: string }) {
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", description: "", goal: "", status: "active" });
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [newForm, setNewForm] = useState({ name: "", goal: "" });
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState("");
+  const api = authFetch(token);
+
+  useEffect(() => {
+    fetch(`/api/campaigns/by-project/${projectSlug}`)
+      .then((r) => r.json())
+      .then(({ campaigns: c }) => { setCampaigns(c ?? []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [projectSlug]);
+
+  const startEdit = (c: Campaign) => {
+    setEditId(c.id);
+    setEditForm({ name: c.name, description: c.description ?? "", goal: String(c.goal), status: c.status });
+  };
+
+  const saveEdit = async () => {
+    if (!editId) return;
+    setSavingEdit(true);
+    setError("");
+    const res = await api(`/api/campaigns/${editId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ name: editForm.name, description: editForm.description, goal: parseFloat(editForm.goal), status: editForm.status }),
+    });
+    const data = await res.json();
+    setSavingEdit(false);
+    if (data.success) {
+      setCampaigns((prev) => prev.map((c) => c.id === editId ? { ...c, ...editForm, goal: parseFloat(editForm.goal), status: editForm.status as Campaign["status"] } : c));
+      setEditId(null);
+    } else setError(data.error ?? "Save failed");
+  };
+
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    setError("");
+    const res = await api("/api/campaigns", {
+      method: "POST",
+      body: JSON.stringify({ project_slug: projectSlug, name: newForm.name, goal: parseFloat(newForm.goal) }),
+    });
+    const data = await res.json();
+    setCreating(false);
+    if (data.campaign) {
+      setCampaigns((prev) => [...prev, data.campaign]);
+      setNewForm({ name: "", goal: "" });
+    } else setError(data.error ?? "Create failed");
+  };
+
+  if (loading) return <p className="text-xs text-[#9CA3AF] py-2">Loading campaigns…</p>;
+
+  return (
+    <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+      <h4 className="text-sm font-semibold text-[#1F2937] mb-3">Campaigns</h4>
+      {error && <p className="text-red-600 text-xs mb-2">{error}</p>}
+      <div className="space-y-2 mb-4">
+        {campaigns.length === 0 && <p className="text-xs text-[#9CA3AF]">No campaigns yet.</p>}
+        {campaigns.map((c) => (
+          <div key={c.id} className="rounded-xl border border-[#E5E7EB] p-3">
+            {editId === c.id ? (
+              <div className="space-y-2">
+                <input value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Name" className="w-full border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
+                <input value={editForm.description} onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                  placeholder="Description (optional)" className="w-full border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
+                <div className="flex gap-2">
+                  <input type="number" min="0" value={editForm.goal} onChange={(e) => setEditForm((f) => ({ ...f, goal: e.target.value }))}
+                    placeholder="Goal $" className="w-28 border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
+                  <select value={editForm.status} onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
+                    className="border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]">
+                    {CAMPAIGN_STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+                  </select>
+                  <button onClick={saveEdit} disabled={savingEdit}
+                    className="px-3 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-60" style={{ background: "#24B5CB" }}>
+                    {savingEdit ? "…" : "Save"}
+                  </button>
+                  <button onClick={() => setEditId(null)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#6B7280] border border-[#E5E7EB]">Cancel</button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-[#1F2937] truncate">{c.name}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${c.status === "completed" ? "bg-emerald-50 text-emerald-700" : c.status === "archived" ? "bg-gray-100 text-gray-500" : "bg-[#EDF9FB] text-[#1A7A8A]"}`}>{c.status}</span>
+                  </div>
+                  <p className="text-xs text-[#9CA3AF] mt-0.5">${c.raised.toLocaleString()} / ${c.goal.toLocaleString()} · {Math.min(100, Math.round((c.raised / c.goal) * 100))}%</p>
+                </div>
+                <button onClick={() => startEdit(c)} className="text-xs text-[#24B5CB] hover:underline shrink-0 font-medium">Edit</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <form onSubmit={create} className="flex gap-2 items-end">
+        <div className="flex-1">
+          <label className="text-xs text-[#6B7280] mb-1 block">New campaign name</label>
+          <input required value={newForm.name} onChange={(e) => setNewForm((f) => ({ ...f, name: e.target.value }))}
+            placeholder="e.g. May Equipment Run"
+            className="w-full border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
+        </div>
+        <div>
+          <label className="text-xs text-[#6B7280] mb-1 block">Goal&nbsp;$</label>
+          <input required type="number" min="1" value={newForm.goal} onChange={(e) => setNewForm((f) => ({ ...f, goal: e.target.value }))}
+            placeholder="2000"
+            className="w-24 border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
+        </div>
+        <button type="submit" disabled={creating}
+          className="px-4 py-1.5 rounded-lg text-white text-sm font-semibold disabled:opacity-60"
+          style={{ background: "#24B5CB" }}>
+          {creating ? "…" : "+ Add"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function ProjectCard({ project, token }: { project: Project; token: string }) {
+  const [raised, setRaised] = useState(String(project.raised));
+  const [status, setStatus] = useState(project.status as string);
+  const [quickSaving, setQuickSaving] = useState(false);
+  const [quickSaved, setQuickSaved] = useState(false);
+
+  const [expanded, setExpanded] = useState(false);
+  const [description, setDescription] = useState(project.description ?? "");
+  const [kpis, setKpis] = useState<string[]>(project.kpis ?? []);
+  const [imageUrl, setImageUrl] = useState(project.image_url ?? "");
+  const [goal, setGoal] = useState(String(project.goal));
+  const [contentSaving, setContentSaving] = useState(false);
+  const [contentSaved, setContentSaved] = useState(false);
+  const [contentError, setContentError] = useState("");
+
+  const api = authFetch(token);
+
+  const saveQuick = async () => {
+    setQuickSaving(true);
+    const res = await api(`/api/admin/projects/${project.slug}`, {
+      method: "PATCH",
+      body: JSON.stringify({ raised: parseFloat(raised), status }),
+    });
+    setQuickSaving(false);
+    if ((await res.json()).success) { setQuickSaved(true); setTimeout(() => setQuickSaved(false), 2000); }
+  };
+
+  const saveContent = async () => {
+    setContentSaving(true);
+    setContentError("");
+    const res = await api(`/api/admin/projects/${project.slug}`, {
+      method: "PATCH",
+      body: JSON.stringify({ description, kpis, image_url: imageUrl, goal: parseFloat(goal) }),
+    });
+    const data = await res.json();
+    setContentSaving(false);
+    if (data.success) { setContentSaved(true); setTimeout(() => setContentSaved(false), 2500); }
+    else setContentError(data.error ?? "Save failed");
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="p-5">
+        {/* Quick row */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h3 className="font-semibold text-[#1F2937]">{project.name}</h3>
+            <p className="text-xs text-[#9CA3AF]">{project.partner} · {project.location}</p>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-[#6B7280]">Raised&nbsp;$</label>
+              <input type="number" min="0" value={raised}
+                onChange={(e) => setRaised(e.target.value)}
+                className="w-24 border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-[#6B7280]">Status</label>
+              <select value={status} onChange={(e) => setStatus(e.target.value)}
+                className="border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]">
+                {PROJECT_STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+            <button onClick={saveQuick} disabled={quickSaving}
+              className="px-4 py-1.5 rounded-lg text-white text-sm font-semibold disabled:opacity-60 transition-colors"
+              style={{ background: quickSaved ? "#059669" : "#24B5CB" }}>
+              {quickSaving ? "Saving…" : quickSaved ? "Saved ✓" : "Save"}
+            </button>
+          </div>
+        </div>
+        <div className="mt-3 h-1.5 rounded-full bg-[#E5E7EB]">
+          <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (project.raised / project.goal) * 100)}%`, background: "#24B5CB" }} />
+        </div>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-xs text-[#9CA3AF]">${project.raised.toLocaleString()} / ${project.goal.toLocaleString()} goal</p>
+          <button onClick={() => setExpanded((x) => !x)}
+            className="text-xs font-medium transition-colors"
+            style={{ color: "#24B5CB" }}>
+            {expanded ? "Hide ▲" : "Edit Content ▼"}
+          </button>
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-[#E5E7EB] px-5 pb-5 pt-4 space-y-4 bg-[#F9FAFB]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-[#6B7280] mb-1">Description</label>
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
+                className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB] resize-none bg-white" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1">Goal&nbsp;$</label>
+              <input type="number" min="0" value={goal} onChange={(e) => setGoal(e.target.value)}
+                className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB] bg-white" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1">Image URL</label>
+              <input type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)}
+                className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB] bg-white" />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-[#6B7280] mb-2">KPIs</label>
+              <KpiEditor kpis={kpis} onChange={setKpis} />
+            </div>
+          </div>
+          {contentError && <p className="text-red-600 text-xs">{contentError}</p>}
+          <button onClick={saveContent} disabled={contentSaving}
+            className="px-5 py-2 rounded-lg text-white text-sm font-semibold disabled:opacity-60"
+            style={{ background: contentSaved ? "#059669" : "#24B5CB" }}>
+            {contentSaving ? "Saving…" : contentSaved ? "Content Saved ✓" : "Save Content"}
+          </button>
+
+          <ProjectCampaigns projectSlug={project.slug} token={token} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProjectsTab({ token }: { token: string }) {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [edits, setEdits] = useState<Record<string, { raised: string; status: string }>>({});
-  const [saving, setSaving] = useState<string | null>(null);
-  const [saved, setSaved] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const api = authFetch(token);
 
   useEffect(() => {
     api("/api/admin/projects")
       .then((r) => r.json())
-      .then(({ projects: p }) => {
-        setProjects(p ?? []);
-        const init: Record<string, { raised: string; status: string }> = {};
-        for (const proj of p ?? []) init[proj.slug] = { raised: String(proj.raised), status: proj.status };
-        setEdits(init);
-        setLoading(false);
-      })
+      .then(({ projects: p }) => { setProjects(p ?? []); setLoading(false); })
       .catch(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const save = async (slug: string) => {
-    setSaving(slug);
-    const e = edits[slug];
-    const res = await api(`/api/admin/projects/${slug}`, {
-      method: "PATCH",
-      body: JSON.stringify({ raised: parseFloat(e.raised), status: e.status }),
-    });
-    setSaving(null);
-    const data = await res.json();
-    if (data.success) {
-      setProjects((prev) => prev.map((p) => p.slug === slug ? { ...p, raised: parseFloat(e.raised), status: e.status as Project["status"] } : p));
-      setSaved(slug);
-      setTimeout(() => setSaved(null), 2000);
-    }
-  };
-
   if (loading) return <Spinner />;
 
   return (
-    <div className="space-y-3">
-      {projects.map((p) => (
-        <div key={p.slug} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h3 className="font-semibold text-[#1F2937]">{p.name}</h3>
-              <p className="text-xs text-[#9CA3AF]">{p.partner} · {p.location}</p>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-[#6B7280]">Raised&nbsp;$</label>
-                <input
-                  type="number" min="0"
-                  value={edits[p.slug]?.raised ?? ""}
-                  onChange={(e) => setEdits((prev) => ({ ...prev, [p.slug]: { ...prev[p.slug], raised: e.target.value } }))}
-                  className="w-24 border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-[#6B7280]">Status</label>
-                <select
-                  value={edits[p.slug]?.status ?? ""}
-                  onChange={(e) => setEdits((prev) => ({ ...prev, [p.slug]: { ...prev[p.slug], status: e.target.value } }))}
-                  className="border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]"
-                >
-                  {PROJECT_STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
-                </select>
-              </div>
-              <button
-                onClick={() => save(p.slug)}
-                disabled={saving === p.slug}
-                className="px-4 py-1.5 rounded-lg text-white text-sm font-semibold disabled:opacity-60 transition-colors"
-                style={{ background: saved === p.slug ? "#059669" : "#24B5CB" }}
-              >
-                {saving === p.slug ? "Saving…" : saved === p.slug ? "Saved ✓" : "Save"}
-              </button>
-            </div>
-          </div>
-          <div className="mt-3 h-1.5 rounded-full bg-[#E5E7EB]">
-            <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(100, (p.raised / p.goal) * 100)}%`, background: "#24B5CB" }} />
-          </div>
-          <p className="text-xs text-[#9CA3AF] mt-1">${p.raised.toLocaleString()} / ${p.goal.toLocaleString()} goal</p>
-        </div>
-      ))}
+    <div className="space-y-4">
+      {projects.map((p) => <ProjectCard key={p.slug} project={p} token={token} />)}
     </div>
   );
 }

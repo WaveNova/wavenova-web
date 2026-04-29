@@ -10,7 +10,7 @@ function generateReferenceCode(): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { donorName, donorEmail, projectSlug, amountUsd, frequency, tipAmount } = body;
+    const { donorName, donorEmail, projectSlug, amountUsd, frequency, tipAmount, campaignId } = body;
 
     // Basic validation
     if (!donorName || !donorEmail || !projectSlug || !amountUsd) {
@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
       tip_amount: tipAmount ?? 0,
       donor_name: donorName,
       donor_email: donorEmail,
+      ...(campaignId ? { campaign_id: campaignId } : {}),
     });
 
     if (donationError) {

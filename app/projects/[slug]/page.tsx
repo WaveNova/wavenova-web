@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
-import type { Project } from "@/lib/database.types";
+import type { Project, Campaign } from "@/lib/database.types";
 import Image from "next/image";
 import { MapPin } from "lucide-react";
 import Footer from "@/app/components/Footer";
@@ -41,9 +41,24 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   "Launching May": { bg: "bg-amber-100", text: "text-amber-800" },
 };
 
+async function getCampaigns(slug: string): Promise<Campaign[]> {
+  try {
+    const supabase = createServerClient();
+    const { data } = await supabase
+      .from("campaigns")
+      .select("*")
+      .eq("project_slug", slug)
+      .neq("status", "archived")
+      .order("created_at", { ascending: true });
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = await getProject(slug);
+  const [project, campaigns] = await Promise.all([getProject(slug), getCampaigns(slug)]);
   if (!project) notFound();
 
   const pct = Math.min(Math.round((project.raised / project.goal) * 100), 100);
@@ -131,27 +146,63 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
             {/* Sidebar */}
             <div className="space-y-5">
-              {/* Fundraising progress */}
-              <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                <div className="font-[var(--font-dm-serif)] text-3xl mb-1" style={{ color: "#24B5CB" }}>
-                  ${project.raised.toLocaleString()}
+              {/* Fundraising — campaigns or legacy single goal */}
+              {campaigns.length > 0 ? (
+                <div className="space-y-3">
+                  {campaigns.map((c) => {
+                    const cpct = Math.min(Math.round((c.raised / c.goal) * 100), 100);
+                    return (
+                      <div key={c.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-semibold text-[#1F2937] text-sm">{c.name}</h3>
+                          {c.status === "completed" && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold whitespace-nowrap">Completed</span>
+                          )}
+                        </div>
+                        {c.description && <p className="text-xs text-[#6B7280] mb-2">{c.description}</p>}
+                        <div className="font-[var(--font-dm-serif)] text-2xl mb-0.5" style={{ color: "#24B5CB" }}>
+                          ${c.raised.toLocaleString()}
+                        </div>
+                        <p className="text-[#6B7280] text-xs mb-2">of ${c.goal.toLocaleString()} goal · {cpct}% funded</p>
+                        <div className="h-1.5 rounded-full bg-[#E5E7EB] mb-3">
+                          <div className="h-full rounded-full" style={{ width: `${cpct}%`, background: c.status === "completed" ? "#059669" : "#24B5CB" }} />
+                        </div>
+                        {c.status !== "completed" && (
+                          <a
+                            href={`/#donate?project=${slug}&campaign=${c.id}`}
+                            className="block w-full text-center py-2.5 rounded-xl text-white font-semibold text-sm"
+                            style={{ background: "#24B5CB" }}
+                          >
+                            Fund This →
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                  <p className="text-[#9CA3AF] text-xs text-center">100% traceable · Bank transfer · WaveNova Yayasan</p>
                 </div>
-                <p className="text-[#6B7280] text-sm mb-3">raised of ${project.goal.toLocaleString()} goal</p>
-                <div className="h-2 rounded-full bg-[#E5E7EB] mb-3">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#24B5CB" }} />
+              ) : (
+                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+                  <div className="font-[var(--font-dm-serif)] text-3xl mb-1" style={{ color: "#24B5CB" }}>
+                    ${project.raised.toLocaleString()}
+                  </div>
+                  <p className="text-[#6B7280] text-sm mb-3">raised of ${project.goal.toLocaleString()} goal</p>
+                  <div className="h-2 rounded-full bg-[#E5E7EB] mb-3">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#24B5CB" }} />
+                  </div>
+                  <p className="text-[#6B7280] text-xs mb-5">{pct}% funded</p>
+                  <a
+                    href={`/#donate?project=${slug}`}
+                    className="block w-full text-center py-3.5 rounded-xl text-white font-semibold text-sm"
+                    style={{ background: "#24B5CB" }}
+                  >
+                    Donate to This Project
+                  </a>
+                  <p className="text-[#9CA3AF] text-xs text-center mt-3">
+                    100% traceable · Bank transfer · WaveNova Yayasan
+                  </p>
                 </div>
-                <p className="text-[#6B7280] text-xs mb-5">{pct}% funded</p>
-                <a
-                  href={`/#donate`}
-                  className="block w-full text-center py-3.5 rounded-xl text-white font-semibold text-sm"
-                  style={{ background: "#24B5CB" }}
-                >
-                  Donate to This Project
-                </a>
-                <p className="text-[#9CA3AF] text-xs text-center mt-3">
-                  100% traceable · Bank transfer · WaveNova Yayasan
-                </p>
-              </div>
+              )}
 
               {/* Project details */}
               <div className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">

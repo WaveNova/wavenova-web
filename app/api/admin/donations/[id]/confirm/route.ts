@@ -12,7 +12,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { data: donation, error: fetchErr } = await supabase
     .from("donations")
-    .select("id, status, amount_usd, donor_email, project_slug")
+    .select("id, status, amount_usd, donor_email, project_slug, campaign_id")
     .eq("id", id)
     .maybeSingle();
 
@@ -54,6 +54,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .update({ raised: project.raised + donation.amount_usd })
       .eq("slug", donation.project_slug);
     if (e3) return NextResponse.json({ error: e3.message }, { status: 500 });
+  }
+
+  // Update campaign raised if this donation was tagged to a campaign
+  if ((donation as { campaign_id?: string | null }).campaign_id) {
+    const { data: campaign } = await supabase
+      .from("campaigns")
+      .select("id, raised")
+      .eq("id", (donation as { campaign_id: string }).campaign_id)
+      .maybeSingle();
+    if (campaign) {
+      await supabase.from("campaigns").update({ raised: campaign.raised + donation.amount_usd }).eq("id", campaign.id);
+    }
   }
 
   return NextResponse.json({ success: true });
