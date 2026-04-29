@@ -1,12 +1,20 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 const FROM = "WaveNova <hi@wavenova.org>";
-const BANK_NAME = process.env.WAVENOVA_BANK_NAME ?? "Bank Central Asia (BCA)";
-const BANK_ACCOUNT = process.env.WAVENOVA_BANK_ACCOUNT ?? "1234567890";
-const BANK_HOLDER = process.env.WAVENOVA_BANK_HOLDER ?? "Yayasan WaveNova Indonesia";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://wavenova.org";
+
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY);
+}
+
+function getBankDetails() {
+  return {
+    name: process.env.WAVENOVA_BANK_NAME ?? "OCBC",
+    account: process.env.WAVENOVA_BANK_ACCOUNT ?? "160800030803",
+    holder: process.env.WAVENOVA_BANK_HOLDER ?? "Yayasan Wave Nova Ocean",
+    swift: process.env.WAVENOVA_BANK_SWIFT ?? "NISPIDJA",
+  };
+}
 
 export async function sendDonationReceipt({
   to,
@@ -24,8 +32,9 @@ export async function sendDonationReceipt({
   frequency: "one-time" | "monthly";
 }) {
   const isMonthly = frequency === "monthly";
+  const bank = getBankDetails();
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to,
     subject: `Your donation to ${projectName} — ${referenceCode}`,
@@ -54,17 +63,21 @@ export async function sendDonationReceipt({
         <table style="width:100%;border-collapse:collapse;font-size:14px;">
           <tr style="background:#F9FAFB;">
             <td style="padding:12px 16px;color:#6B7280;width:40%;">Bank</td>
-            <td style="padding:12px 16px;color:#1F2937;font-weight:600;">${BANK_NAME}</td>
+            <td style="padding:12px 16px;color:#1F2937;font-weight:600;">${bank.name}</td>
           </tr>
           <tr>
             <td style="padding:12px 16px;color:#6B7280;border-top:1px solid #E5E7EB;">Account Number</td>
-            <td style="padding:12px 16px;color:#1F2937;font-weight:600;border-top:1px solid #E5E7EB;">${BANK_ACCOUNT}</td>
+            <td style="padding:12px 16px;color:#1F2937;font-weight:600;border-top:1px solid #E5E7EB;">${bank.account}</td>
           </tr>
           <tr style="background:#F9FAFB;">
             <td style="padding:12px 16px;color:#6B7280;border-top:1px solid #E5E7EB;">Account Holder</td>
-            <td style="padding:12px 16px;color:#1F2937;font-weight:600;border-top:1px solid #E5E7EB;">${BANK_HOLDER}</td>
+            <td style="padding:12px 16px;color:#1F2937;font-weight:600;border-top:1px solid #E5E7EB;">${bank.holder}</td>
           </tr>
           <tr>
+            <td style="padding:12px 16px;color:#6B7280;border-top:1px solid #E5E7EB;">Swift Code</td>
+            <td style="padding:12px 16px;color:#1F2937;font-weight:600;border-top:1px solid #E5E7EB;">${bank.swift}</td>
+          </tr>
+          <tr style="background:#F9FAFB;">
             <td style="padding:12px 16px;color:#6B7280;border-top:1px solid #E5E7EB;">Reference / Notes</td>
             <td style="padding:12px 16px;color:#24B5CB;font-weight:700;border-top:1px solid #E5E7EB;">${referenceCode}</td>
           </tr>
@@ -96,7 +109,7 @@ export async function sendMagicLink({
   to: string;
   magicLink: string;
 }) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to,
     subject: "Your WaveNova login link",
