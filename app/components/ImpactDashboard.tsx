@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import type { Metrics, Activity } from "@/lib/database.types";
 
 const ALLOCATION = [
@@ -54,8 +56,18 @@ interface Props {
 }
 
 export default function ImpactDashboard({ metrics, activities }: Props) {
-  const m = metrics ?? { total_kg: 47823, active_stations: 5, workers_employed: 18, households_served: 340 };
-  const feed = activities.length > 0 ? activities : [
+  const [liveMetrics, setLiveMetrics] = useState<Metrics | null>(metrics);
+  const [liveActivities, setLiveActivities] = useState<Activity[]>(activities);
+
+  useEffect(() => {
+    supabase.from("metrics").select("*").limit(1).maybeSingle()
+      .then(({ data }) => { if (data) setLiveMetrics(data); });
+    supabase.from("activities").select("*").order("created_at", { ascending: false }).limit(8)
+      .then(({ data }) => { if (data && data.length > 0) setLiveActivities(data); });
+  }, []);
+
+  const m = liveMetrics ?? { total_kg: 47823, active_stations: 5, workers_employed: 18, households_served: 340 };
+  const feed = liveActivities.length > 0 ? liveActivities : [
     { id: "1", station_name: "Selong Belanak", action_text: "purchased 420 KG this week", created_at: "" },
     { id: "2", station_name: "Honest Impact", action_text: "river barrier intercepted 180 KG", created_at: "" },
     { id: "3", station_name: "Mawun", action_text: "first station collection — 95 KG", created_at: "" },
