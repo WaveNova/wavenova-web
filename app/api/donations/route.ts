@@ -93,9 +93,10 @@ export async function POST(req: NextRequest) {
       success: true,
       referenceCode,
       projectName,
-      bankName: process.env.WAVENOVA_BANK_NAME ?? "Bank Central Asia (BCA)",
-      bankAccount: process.env.WAVENOVA_BANK_ACCOUNT ?? "1234567890",
-      bankHolder: process.env.WAVENOVA_BANK_HOLDER ?? "Yayasan WaveNova Indonesia",
+      bankName: process.env.WAVENOVA_BANK_NAME ?? "OCBC",
+      bankAccount: process.env.WAVENOVA_BANK_ACCOUNT ?? "160800030803",
+      bankHolder: process.env.WAVENOVA_BANK_HOLDER ?? "Yayasan Wave Nova Ocean",
+      bankSwift: process.env.WAVENOVA_BANK_SWIFT ?? "NISPIDJA",
     });
   } catch (err) {
     console.error("Donation API error:", err);

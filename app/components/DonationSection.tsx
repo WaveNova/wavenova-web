@@ -31,6 +31,7 @@ interface DonationResult {
   bankName: string;
   bankAccount: string;
   bankHolder: string;
+  bankSwift: string;
 }
 
 function GoogleLogo() {
@@ -89,6 +90,7 @@ function SuccessScreen({ result, amount, onReset }: { result: DonationResult; am
           { label: "Bank", value: result.bankName },
           { label: "Account Number", value: result.bankAccount },
           { label: "Account Holder", value: result.bankHolder },
+          { label: "Swift Code", value: result.bankSwift },
           { label: "Amount", value: `$${amount.toFixed(0)} USD` },
           { label: "Reference", value: result.referenceCode },
         ].map((row, i) => (
