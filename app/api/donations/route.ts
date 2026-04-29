@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase-server";
-import { sendDonationReceipt } from "@/lib/email";
 
 function generateReferenceCode(): string {
   const year = new Date().getFullYear();
@@ -74,20 +73,6 @@ export async function POST(req: NextRequest) {
       .single();
 
     const projectName = project?.name ?? projectSlug;
-
-    // Send receipt email (non-blocking — don't fail if email fails)
-    try {
-      await sendDonationReceipt({
-        to: donorEmail,
-        donorName,
-        amount: amountUsd + (tipAmount ?? 0),
-        projectName,
-        referenceCode,
-        frequency: frequency ?? "one-time",
-      });
-    } catch (emailErr) {
-      console.error("Email send failed (non-fatal):", emailErr);
-    }
 
     return NextResponse.json({
       success: true,
