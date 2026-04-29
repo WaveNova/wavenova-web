@@ -146,15 +146,40 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
             {/* Sidebar */}
             <div className="space-y-5">
-              {/* Fundraising — campaigns or legacy single goal */}
-              {campaigns.length > 0 ? (
+              {/* Project overall raised/goal — always visible */}
+              <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+                <div className="font-[var(--font-dm-serif)] text-3xl mb-1" style={{ color: "#24B5CB" }}>
+                  ${project.raised.toLocaleString()}
+                </div>
+                <p className="text-[#6B7280] text-sm mb-3">raised of ${project.goal.toLocaleString()} goal</p>
+                <div className="h-2 rounded-full bg-[#E5E7EB] mb-3">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#24B5CB" }} />
+                </div>
+                <p className="text-[#6B7280] text-xs mb-5">{pct}% funded</p>
+                {campaigns.length === 0 && (
+                  <a
+                    href={`/#donate?project=${slug}`}
+                    className="block w-full text-center py-3.5 rounded-xl text-white font-semibold text-sm"
+                    style={{ background: "#24B5CB" }}
+                  >
+                    Donate to This Project
+                  </a>
+                )}
+                <p className="text-[#9CA3AF] text-xs text-center mt-3">
+                  100% traceable · Bank transfer · WaveNova Yayasan
+                </p>
+              </div>
+
+              {/* Active campaigns */}
+              {campaigns.length > 0 && (
                 <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-[#1F2937] px-1">Active Campaigns</h3>
                   {campaigns.map((c) => {
                     const cpct = Math.min(Math.round((c.raised / c.goal) * 100), 100);
                     return (
                       <div key={c.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="font-semibold text-[#1F2937] text-sm">{c.name}</h3>
+                          <h4 className="font-semibold text-[#1F2937] text-sm">{c.name}</h4>
                           {c.status === "completed" && (
                             <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold whitespace-nowrap">Completed</span>
                           )}
@@ -179,28 +204,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                       </div>
                     );
                   })}
-                  <p className="text-[#9CA3AF] text-xs text-center">100% traceable · Bank transfer · WaveNova Yayasan</p>
-                </div>
-              ) : (
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                  <div className="font-[var(--font-dm-serif)] text-3xl mb-1" style={{ color: "#24B5CB" }}>
-                    ${project.raised.toLocaleString()}
-                  </div>
-                  <p className="text-[#6B7280] text-sm mb-3">raised of ${project.goal.toLocaleString()} goal</p>
-                  <div className="h-2 rounded-full bg-[#E5E7EB] mb-3">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#24B5CB" }} />
-                  </div>
-                  <p className="text-[#6B7280] text-xs mb-5">{pct}% funded</p>
-                  <a
-                    href={`/#donate?project=${slug}`}
-                    className="block w-full text-center py-3.5 rounded-xl text-white font-semibold text-sm"
-                    style={{ background: "#24B5CB" }}
-                  >
-                    Donate to This Project
-                  </a>
-                  <p className="text-[#9CA3AF] text-xs text-center mt-3">
-                    100% traceable · Bank transfer · WaveNova Yayasan
-                  </p>
                 </div>
               )}
 
