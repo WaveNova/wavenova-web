@@ -114,7 +114,7 @@ export default async function DashboardPage() {
             <div className="lg:col-span-2 space-y-4">
               <h2 className="font-bold text-lg text-[#1F2937]">Station Overview</h2>
               {(projects.length > 0 ? projects : [{
-                id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner: "SBCA", location: "South Lombok", status: "Operational" as const, category: "Sorting Stations" as const, kpis: ["12,400 KG", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=400&q=60", since_year: "2021", description: null, created_at: ""
+                id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner_slug: "sbca", location: "South Lombok", status: "Operational" as const, category: "Sorting Stations" as const, kpis: ["12,400 KG", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=400&q=60", since_year: "2021", description: null, created_at: ""
               }] as Project[]).map((project) => {
                 const pct = Math.min(Math.round((project.raised / project.goal) * 100), 100);
                 const statusColor = STATUS_COLORS[project.status] ?? "#6B7280";

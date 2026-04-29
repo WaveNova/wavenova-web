@@ -4,13 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 
-const TRUST_STATS = [
-  { value: "5", label: "Active Stations" },
-  { value: "3", label: "Local Partners" },
-  { value: "100%", label: "Traceable" },
-  { value: "85–90%", label: "Direct to Projects" },
-];
-
 function useCountUp(target: number, duration = 1800) {
   const [count, setCount] = useState(0);
   const [started, setStarted] = useState(false);
@@ -43,9 +36,17 @@ function useCountUp(target: number, duration = 1800) {
 
 type AuthState = "loading" | "signed-out" | "signed-in";
 
+interface LiveStats {
+  partners: number;
+  projects: number;
+  stations: number;
+  workers: number;
+}
+
 export default function Hero({ totalKg }: { totalKg: number }) {
   const { count, ref } = useCountUp(totalKg);
   const [authState, setAuthState] = useState<AuthState>("loading");
+  const [stats, setStats] = useState<LiveStats>({ partners: 4, projects: 5, stations: 5, workers: 18 });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -55,6 +56,21 @@ export default function Hero({ totalKg }: { totalKg: number }) {
       setAuthState(session?.user ? "signed-in" : "signed-out");
     });
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    Promise.all([
+      supabase.from("partners").select("slug", { count: "exact", head: true }),
+      supabase.from("projects").select("slug", { count: "exact", head: true }),
+      supabase.from("metrics").select("active_stations, workers_employed").limit(1).maybeSingle(),
+    ]).then(([partnerRes, projectRes, metricsRes]) => {
+      setStats({
+        partners: partnerRes.count ?? 4,
+        projects: projectRes.count ?? 5,
+        stations: metricsRes.data?.active_stations ?? 5,
+        workers: metricsRes.data?.workers_employed ?? 18,
+      });
+    });
   }, []);
 
   const scrollToDonate = () => {
@@ -128,7 +144,12 @@ export default function Hero({ totalKg }: { totalKg: number }) {
 
       <div className="absolute bottom-0 left-0 right-0 z-10" style={{ background: "#1A7A8A" }}>
         <div className="max-w-5xl mx-auto px-6 py-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {TRUST_STATS.map((s) => (
+          {[
+            { value: stats.partners, label: "Partners" },
+            { value: stats.projects, label: "Projects" },
+            { value: stats.stations, label: "Active Stations" },
+            { value: stats.workers, label: "Workers Employed" },
+          ].map((s) => (
             <div key={s.label} className="text-center">
               <div className="font-bold text-lg sm:text-xl">{s.value}</div>
               <div className="text-white/70 text-xs sm:text-sm">{s.label}</div>

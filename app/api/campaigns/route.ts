@@ -11,9 +11,13 @@ export async function POST(req: NextRequest) {
   if (!project_slug || !name || !goal) {
     return NextResponse.json({ error: "project_slug, name, and goal required" }, { status: 400 });
   }
-  // Partners can only create campaigns for their assigned project
-  if (auth.role === "partner" && auth.projectSlug !== project_slug) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  // Partners can only create campaigns for projects belonging to their partner org
+  if (auth.role === "partner") {
+    const supabaseCheck = createServerClient();
+    const { data: proj } = await supabaseCheck.from("projects").select("partner_slug").eq("slug", project_slug).maybeSingle();
+    if (!proj || proj.partner_slug !== auth.partnerSlug) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   const supabase = createServerClient();

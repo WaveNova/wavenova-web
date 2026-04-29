@@ -5,11 +5,20 @@
 -- TABLES
 -- ============================================================
 
+create table if not exists partners (
+  slug text primary key,
+  name text not null,
+  description text,
+  logo_url text,
+  website text,
+  created_at timestamptz default now()
+);
+
 create table if not exists projects (
   id uuid primary key default gen_random_uuid(),
   slug text unique not null,
   name text not null,
-  partner text not null,
+  partner_slug text not null references partners(slug) on delete cascade,
   location text not null,
   status text not null check (status in ('Operational', 'Just Launched', 'Launching May')),
   category text not null check (category in ('Sorting Stations', 'Waste Management')),
@@ -65,7 +74,7 @@ create table if not exists user_roles (
   id uuid primary key default gen_random_uuid(),
   email text unique not null,
   role text not null check (role in ('admin', 'partner')),
-  project_slug text references projects(slug) on delete set null,
+  partner_slug text references partners(slug) on delete set null,
   created_at timestamptz default now()
 );
 
@@ -84,6 +93,7 @@ create table if not exists campaigns (
 -- ROW LEVEL SECURITY
 -- ============================================================
 
+alter table partners enable row level security;
 alter table projects enable row level security;
 alter table donors enable row level security;
 alter table donations enable row level security;
@@ -94,6 +104,8 @@ alter table user_roles enable row level security;
 -- user_roles: no public read — service role only (accessed via API routes)
 
 create policy "Campaigns are publicly readable" on campaigns for select using (true);
+
+create policy "Partners are publicly readable" on partners for select using (true);
 
 -- Projects, activities, metrics: public read
 create policy "Projects are publicly readable" on projects for select using (true);

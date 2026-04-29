@@ -18,13 +18,12 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string }> =
   "Launching May": { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-400" },
 };
 
-// Fallback projects used when Supabase is not yet connected
 const FALLBACK_PROJECTS: Project[] = [
-  { id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner: "SBCA", location: "South Lombok", status: "Operational", category: "Sorting Stations", kpis: ["5 years running", "12,400 KG", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=800&q=70", since_year: "2021", description: null, created_at: "" },
-  { id: "2", slug: "mawun", name: "Mawun Station", partner: "Eco Mawun", location: "South Lombok", status: "Just Launched", category: "Sorting Stations", kpis: ["New station", "3 workers", "2026"], raised: 800, goal: 4000, image_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=70", since_year: "2026", description: null, created_at: "" },
-  { id: "3", slug: "awang", name: "Awang Station", partner: "Eco Mawun", location: "South Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Beach cleanup May 6", "Sea waste", "Boats"], raised: 400, goal: 4500, image_url: "https://images.unsplash.com/photo-1473625247510-8ceb1760943f?w=800&q=70", since_year: "2026", description: null, created_at: "" },
-  { id: "4", slug: "gili-gede", name: "Gili Gede Station", partner: "GPS_ggi + Marina Del Ray", location: "West Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Island station", "Sea collection", "Early May"], raised: 600, goal: 5500, image_url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=70", since_year: "2026", description: null, created_at: "" },
-  { id: "5", slug: "kuta-honest-impact", name: "Honest Impact — Kuta", partner: "Honest Made", location: "Central Lombok", status: "Operational", category: "Waste Management", kpis: ["Daily sweepers", "River barriers", "Residential"], raised: 4200, goal: 6000, image_url: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=70", since_year: "2021", description: null, created_at: "" },
+  { id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner_slug: "sbca", location: "South Lombok", status: "Operational", category: "Sorting Stations", kpis: ["5 years running", "12,400 KG", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=800&q=70", since_year: "2021", description: null, created_at: "" },
+  { id: "2", slug: "mawun", name: "Mawun Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Just Launched", category: "Sorting Stations", kpis: ["New station", "3 workers", "2026"], raised: 800, goal: 4000, image_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=70", since_year: "2026", description: null, created_at: "" },
+  { id: "3", slug: "awang", name: "Awang Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Beach cleanup May 6", "Sea waste", "Boats"], raised: 400, goal: 4500, image_url: "https://images.unsplash.com/photo-1473625247510-8ceb1760943f?w=800&q=70", since_year: "2026", description: null, created_at: "" },
+  { id: "4", slug: "gili-gede", name: "Gili Gede Station", partner_slug: "gps-ggi", location: "West Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Island station", "Sea collection", "Early May"], raised: 600, goal: 5500, image_url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=70", since_year: "2026", description: null, created_at: "" },
+  { id: "5", slug: "kuta-honest-impact", name: "Honest Impact — Kuta", partner_slug: "honest-made", location: "Central Lombok", status: "Operational", category: "Waste Management", kpis: ["Daily sweepers", "River barriers", "Residential"], raised: 4200, goal: 6000, image_url: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=70", since_year: "2021", description: null, created_at: "" },
 ];
 
 function ProjectCard({ project }: { project: Project }) {
@@ -45,7 +44,7 @@ function ProjectCard({ project }: { project: Project }) {
         <h3 className="font-bold text-lg text-[#1F2937] leading-tight mb-1">{project.name}</h3>
         <div className="flex items-center gap-1 text-[#6B7280] text-sm mb-4">
           <MapPin size={13} />
-          <span>{project.location} · {project.partner}</span>
+          <span>{project.location}</span>
         </div>
         <div className="flex flex-wrap gap-2 mb-4">
           {project.kpis.map((kpi) => (

@@ -10,10 +10,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const supabase = createServerClient();
 
-  // Fetch campaign to check ownership for partners
+  // Fetch campaign + project to check partner ownership
   if (auth.role === "partner") {
     const { data: campaign } = await supabase.from("campaigns").select("project_slug").eq("id", id).maybeSingle();
-    if (!campaign || campaign.project_slug !== auth.projectSlug) {
+    if (!campaign) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const { data: proj } = await supabase.from("projects").select("partner_slug").eq("slug", campaign.project_slug).maybeSingle();
+    if (!proj || proj.partner_slug !== auth.partnerSlug) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }

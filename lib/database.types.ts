@@ -3,11 +3,20 @@ export type ProjectCategory = "Sorting Stations" | "Waste Management";
 export type DonationFrequency = "one-time" | "monthly";
 export type DonationStatus = "pending" | "confirmed";
 
+export interface Partner {
+  slug: string;
+  name: string;
+  description: string | null;
+  logo_url: string | null;
+  website: string | null;
+  created_at: string;
+}
+
 export interface Project {
   id: string;
   slug: string;
   name: string;
-  partner: string;
+  partner_slug: string;
   location: string;
   status: ProjectStatus;
   category: ProjectCategory;
@@ -76,7 +85,7 @@ export interface UserRole {
   id: string;
   email: string;
   role: "admin" | "partner";
-  project_slug: string | null;
+  partner_slug: string | null;
   created_at: string;
 }
 

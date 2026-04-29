@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
-import type { Project, Campaign } from "@/lib/database.types";
+import type { Project, Campaign, Partner } from "@/lib/database.types";
 import Image from "next/image";
 import { MapPin } from "lucide-react";
 import Footer from "@/app/components/Footer";
@@ -8,11 +8,11 @@ import Footer from "@/app/components/Footer";
 export const revalidate = 60;
 
 const FALLBACK_PROJECTS: Project[] = [
-  { id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner: "SBCA", location: "South Lombok", status: "Operational", category: "Sorting Stations", kpis: ["5 years running", "12,400 KG", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=800&q=70", since_year: "2021", description: "The original Blue Loop station — WaveNova's Chapter 1. SBCA has been collecting, sorting, and selling plastic waste from South Lombok's beaches for 5 years.", created_at: "" },
-  { id: "2", slug: "mawun", name: "Mawun Station", partner: "Eco Mawun", location: "South Lombok", status: "Just Launched", category: "Sorting Stations", kpis: ["New station", "3 workers", "2026"], raised: 800, goal: 4000, image_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=70", since_year: "2026", description: "A brand-new sorting station at Mawun beach, operated by the Eco Mawun team.", created_at: "" },
-  { id: "3", slug: "awang", name: "Awang Station", partner: "Eco Mawun", location: "South Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Beach cleanup May 6", "Sea waste", "Boats"], raised: 400, goal: 4500, image_url: "https://images.unsplash.com/photo-1473625247510-8ceb1760943f?w=800&q=70", since_year: "2026", description: "Kicking off May 6, 2026 with a major beach cleanup, followed by setup of a sorting station in Awang.", created_at: "" },
-  { id: "4", slug: "gili-gede", name: "Gili Gede Station", partner: "GPS_ggi + Marina Del Ray", location: "West Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Island station", "Sea collection", "Early May"], raised: 600, goal: 5500, image_url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=70", since_year: "2026", description: "An island-based sorting station on Gili Gede, operated by GPS_ggi in partnership with Marina Del Ray.", created_at: "" },
-  { id: "5", slug: "kuta-honest-impact", name: "Honest Impact — Kuta", partner: "Honest Made", location: "Central Lombok", status: "Operational", category: "Waste Management", kpis: ["Daily sweepers", "River barriers", "Residential"], raised: 4200, goal: 6000, image_url: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=70", since_year: "2021", description: "The social arm of Honest Made — daily road sweepers, river barriers, and residential waste collection in Kuta.", created_at: "" },
+  { id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner_slug: "sbca", location: "South Lombok", status: "Operational", category: "Sorting Stations", kpis: ["5 years running", "12,400 KG", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=800&q=70", since_year: "2021", description: "The original Blue Loop station — WaveNova's Chapter 1. SBCA has been collecting, sorting, and selling plastic waste from South Lombok's beaches for 5 years.", created_at: "" },
+  { id: "2", slug: "mawun", name: "Mawun Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Just Launched", category: "Sorting Stations", kpis: ["New station", "3 workers", "2026"], raised: 800, goal: 4000, image_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=70", since_year: "2026", description: "A brand-new sorting station at Mawun beach, operated by the Eco Mawun team.", created_at: "" },
+  { id: "3", slug: "awang", name: "Awang Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Beach cleanup May 6", "Sea waste", "Boats"], raised: 400, goal: 4500, image_url: "https://images.unsplash.com/photo-1473625247510-8ceb1760943f?w=800&q=70", since_year: "2026", description: "Kicking off May 6, 2026 with a major beach cleanup, followed by setup of a sorting station in Awang.", created_at: "" },
+  { id: "4", slug: "gili-gede", name: "Gili Gede Station", partner_slug: "gps-ggi", location: "West Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Island station", "Sea collection", "Early May"], raised: 600, goal: 5500, image_url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=70", since_year: "2026", description: "An island-based sorting station on Gili Gede, operated by GPS_ggi in partnership with Marina Del Ray.", created_at: "" },
+  { id: "5", slug: "kuta-honest-impact", name: "Honest Impact — Kuta", partner_slug: "honest-made", location: "Central Lombok", status: "Operational", category: "Waste Management", kpis: ["Daily sweepers", "River barriers", "Residential"], raised: 4200, goal: 6000, image_url: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=70", since_year: "2021", description: "The social arm of Honest Made — daily road sweepers, river barriers, and residential waste collection in Kuta.", created_at: "" },
 ];
 
 async function getProject(slug: string): Promise<Project | null> {
@@ -22,6 +22,16 @@ async function getProject(slug: string): Promise<Project | null> {
     return data;
   } catch {
     return FALLBACK_PROJECTS.find((p) => p.slug === slug) ?? null;
+  }
+}
+
+async function getPartner(slug: string): Promise<Partner | null> {
+  try {
+    const supabase = createServerClient();
+    const { data } = await supabase.from("partners").select("*").eq("slug", slug).maybeSingle();
+    return data;
+  } catch {
+    return null;
   }
 }
 
@@ -61,6 +71,8 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const [project, campaigns] = await Promise.all([getProject(slug), getCampaigns(slug)]);
   if (!project) notFound();
 
+  const partner = await getPartner(project.partner_slug);
+
   const pct = Math.min(Math.round((project.raised / project.goal) * 100), 100);
   const status = STATUS_COLORS[project.status] ?? STATUS_COLORS["Operational"];
 
@@ -89,7 +101,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <h1 className="font-[var(--font-dm-serif)] text-3xl md:text-4xl text-white">{project.name}</h1>
             <div className="flex items-center gap-1.5 text-white/80 text-sm mt-1">
               <MapPin size={14} />
-              <span>{project.location} · {project.partner}</span>
+              <span>{project.location}{partner ? ` · ${partner.name}` : ""}</span>
             </div>
           </div>
         </div>
@@ -213,7 +225,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 <dl className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <dt className="text-[#6B7280]">Partner</dt>
-                    <dd className="font-medium text-[#1F2937]">{project.partner}</dd>
+                    <dd className="font-medium text-[#1F2937]">{partner?.name ?? project.partner_slug}</dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-[#6B7280]">Location</dt>

@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export interface CallerAuth {
   email: string;
   role: "admin" | "partner" | null;
-  projectSlug: string | null;
+  partnerSlug: string | null;
 }
 
 export async function getCallerAuth(req: NextRequest): Promise<CallerAuth | NextResponse> {
@@ -17,13 +17,13 @@ export async function getCallerAuth(req: NextRequest): Promise<CallerAuth | Next
 
   const { data } = await supabase
     .from("user_roles")
-    .select("role, project_slug")
+    .select("role, partner_slug")
     .eq("email", user.email)
     .maybeSingle();
 
   return {
     email: user.email,
     role: (data?.role as "admin" | "partner") ?? null,
-    projectSlug: data?.project_slug ?? null,
+    partnerSlug: data?.partner_slug ?? null,
   };
 }
