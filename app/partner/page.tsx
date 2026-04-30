@@ -35,7 +35,7 @@ export default function PartnerPage() {
   const [noPartner, setNoPartner] = useState(false);
 
   const [showNew, setShowNew] = useState(false);
-  const [newForm, setNewForm] = useState({ slug: "", name: "", location: "", category: "Sorting Stations", image_url: "", goal: "", description: "", since_year: "" });
+  const [newForm, setNewForm] = useState({ slug: "", name: "", location: "", category: "Sorting Stations", image_url: "", description: "", since_year: "" });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
 
@@ -72,12 +72,12 @@ export default function PartnerPage() {
     const res = await fetch("/api/partner/projects", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ ...newForm, goal: newForm.goal ? parseFloat(newForm.goal) : 5000 }),
+      body: JSON.stringify({ ...newForm }),
     });
     const data = await res.json();
     setCreating(false);
     if (data.success) {
-      setNewForm({ slug: "", name: "", location: "", category: "Sorting Stations", image_url: "", goal: "", description: "", since_year: "" });
+      setNewForm({ slug: "", name: "", location: "", category: "Sorting Stations", image_url: "", description: "", since_year: "" });
       setShowNew(false);
       // refresh list
       const updated = await fetch("/api/partner/projects", { headers: { Authorization: `Bearer ${token}` } });
@@ -166,12 +166,6 @@ export default function PartnerPage() {
                         value={newForm.image_url}
                         onChange={(url) => setNewForm((f) => ({ ...f, image_url: url }))}
                       />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-[#6B7280] mb-1">Funding Goal ($)</label>
-                      <input type="number" min="0" value={newForm.goal} onChange={(e) => setNewForm((f) => ({ ...f, goal: e.target.value }))}
-                        placeholder="5000"
-                        className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB]" />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-[#6B7280] mb-1">Operating Since</label>

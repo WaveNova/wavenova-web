@@ -12,17 +12,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { data: donation, error: fetchErr } = await supabase
     .from("donations")
-    .select("id, status, amount_usd, donor_email, project_slug, campaign_id")
+    .select("id, status, amount_usd, donor_email, project_slug, fund_id")
     .eq("id", id)
     .maybeSingle();
 
   if (fetchErr || !donation) return NextResponse.json({ error: "Donation not found" }, { status: 404 });
   if (donation.status === "confirmed") return NextResponse.json({ error: "Already confirmed" }, { status: 409 });
 
-  const { error: e1 } = await supabase
-    .from("donations")
-    .update({ status: "confirmed" })
-    .eq("id", id);
+  const { error: e1 } = await supabase.from("donations").update({ status: "confirmed" }).eq("id", id);
   if (e1) return NextResponse.json({ error: e1.message }, { status: 500 });
 
   const { data: donor } = await supabase
@@ -32,39 +29,22 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .maybeSingle();
 
   if (donor) {
-    const { error: e2 } = await supabase
-      .from("donors")
-      .update({
-        total_donated: donor.total_donated + donation.amount_usd,
-        total_kg_removed: donor.total_kg_removed + donation.amount_usd * 0.5,
-      })
-      .eq("id", donor.id);
-    if (e2) return NextResponse.json({ error: e2.message }, { status: 500 });
+    await supabase.from("donors").update({
+      total_donated: donor.total_donated + donation.amount_usd,
+      total_kg_removed: donor.total_kg_removed + donation.amount_usd * 0.5,
+    }).eq("id", donor.id);
   }
 
-  const { data: project } = await supabase
-    .from("projects")
-    .select("slug, raised")
-    .eq("slug", donation.project_slug)
-    .maybeSingle();
-
+  const { data: project } = await supabase.from("projects").select("slug, raised").eq("slug", donation.project_slug).maybeSingle();
   if (project) {
-    const { error: e3 } = await supabase
-      .from("projects")
-      .update({ raised: project.raised + donation.amount_usd })
-      .eq("slug", donation.project_slug);
-    if (e3) return NextResponse.json({ error: e3.message }, { status: 500 });
+    await supabase.from("projects").update({ raised: project.raised + donation.amount_usd }).eq("slug", donation.project_slug);
   }
 
-  // Update campaign raised if this donation was tagged to a campaign
-  if ((donation as { campaign_id?: string | null }).campaign_id) {
-    const { data: campaign } = await supabase
-      .from("campaigns")
-      .select("id, raised")
-      .eq("id", (donation as { campaign_id: string }).campaign_id)
-      .maybeSingle();
-    if (campaign) {
-      await supabase.from("campaigns").update({ raised: campaign.raised + donation.amount_usd }).eq("id", campaign.id);
+  const fundId = (donation as { fund_id?: string | null }).fund_id;
+  if (fundId) {
+    const { data: fund } = await supabase.from("funds").select("id, raised").eq("id", fundId).maybeSingle();
+    if (fund) {
+      await supabase.from("funds").update({ raised: fund.raised + donation.amount_usd }).eq("id", fund.id);
     }
   }
 

@@ -78,7 +78,7 @@ create table if not exists user_roles (
   created_at timestamptz default now()
 );
 
-create table if not exists campaigns (
+create table if not exists funds (
   id uuid primary key default gen_random_uuid(),
   project_slug text not null references projects(slug) on delete cascade,
   name text not null,
@@ -99,11 +99,11 @@ alter table donors enable row level security;
 alter table donations enable row level security;
 alter table activities enable row level security;
 alter table metrics enable row level security;
-alter table campaigns enable row level security;
+alter table funds enable row level security;
 alter table user_roles enable row level security;
 -- user_roles: no public read — service role only (accessed via API routes)
 
-create policy "Campaigns are publicly readable" on campaigns for select using (true);
+create policy "Funds are publicly readable" on funds for select using (true);
 
 create policy "Partners are publicly readable" on partners for select using (true);
 

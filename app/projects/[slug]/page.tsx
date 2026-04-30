@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
-import type { Project, Campaign, Partner } from "@/lib/database.types";
+import type { Project, Fund, Partner, Activity } from "@/lib/database.types";
 import Image from "next/image";
 import { MapPin } from "lucide-react";
 import Footer from "@/app/components/Footer";
@@ -35,6 +35,46 @@ async function getPartner(slug: string): Promise<Partner | null> {
   }
 }
 
+async function getFunds(slug: string): Promise<Fund[]> {
+  try {
+    const supabase = createServerClient();
+    const { data } = await supabase
+      .from("funds")
+      .select("*")
+      .eq("project_slug", slug)
+      .neq("status", "archived")
+      .order("created_at", { ascending: true });
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+async function getActivities(stationName: string): Promise<Activity[]> {
+  try {
+    const supabase = createServerClient();
+    const { data } = await supabase
+      .from("activities")
+      .select("*")
+      .eq("station_name", stationName)
+      .order("created_at", { ascending: false })
+      .limit(8);
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return "Just now";
+  if (hours < 24) return `${hours}h ago`;
+  if (days === 1) return "Yesterday";
+  return `${days} days ago`;
+}
+
 export async function generateStaticParams() {
   try {
     const supabase = createServerClient();
@@ -51,30 +91,23 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   "Launching May": { bg: "bg-amber-100", text: "text-amber-800" },
 };
 
-async function getCampaigns(slug: string): Promise<Campaign[]> {
-  try {
-    const supabase = createServerClient();
-    const { data } = await supabase
-      .from("campaigns")
-      .select("*")
-      .eq("project_slug", slug)
-      .neq("status", "archived")
-      .order("created_at", { ascending: true });
-    return data ?? [];
-  } catch {
-    return [];
-  }
-}
-
 export default async function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [project, campaigns] = await Promise.all([getProject(slug), getCampaigns(slug)]);
+  const [project, funds] = await Promise.all([getProject(slug), getFunds(slug)]);
   if (!project) notFound();
 
-  const partner = await getPartner(project.partner_slug);
+  const [partner, activities] = await Promise.all([
+    getPartner(project.partner_slug),
+    getActivities(project.name),
+  ]);
 
-  const pct = Math.min(Math.round((project.raised / project.goal) * 100), 100);
   const status = STATUS_COLORS[project.status] ?? STATUS_COLORS["Operational"];
+
+  // Aggregate fund totals for main progress bar
+  const totalRaised = funds.reduce((s, f) => s + f.raised, 0);
+  const totalGoal = funds.reduce((s, f) => s + f.goal, 0);
+  const hasFunds = totalGoal > 0;
+  const pct = hasFunds ? Math.min(Math.round((totalRaised / totalGoal) * 100), 100) : 0;
 
   return (
     <>
@@ -154,68 +187,84 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                   ))}
                 </div>
               </div>
+
+              {/* Latest Updates */}
+              {activities.length > 0 && (
+                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+                  <h2 className="font-bold text-xl text-[#1F2937] mb-4">Latest Updates</h2>
+                  <div className="space-y-4">
+                    {activities.map((a) => (
+                      <div key={a.id} className="flex items-start gap-3">
+                        <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ background: "#24B5CB" }} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[#1F2937] text-sm leading-snug">{a.action_text}</p>
+                          <p className="text-[#9CA3AF] text-xs mt-0.5">{timeAgo(a.created_at)}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Sidebar */}
             <div className="space-y-5">
-              {/* Project overall raised/goal — always visible */}
+              {/* Fundraising progress */}
               <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                <div className="font-[var(--font-dm-serif)] text-3xl mb-1" style={{ color: "#24B5CB" }}>
-                  ${project.raised.toLocaleString()}
-                </div>
-                <p className="text-[#6B7280] text-sm mb-3">raised of ${project.goal.toLocaleString()} goal</p>
-                <div className="h-2 rounded-full bg-[#E5E7EB] mb-3">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#24B5CB" }} />
-                </div>
-                <p className="text-[#6B7280] text-xs mb-5">{pct}% funded</p>
-                {campaigns.length === 0 && (
-                  <a
-                    href={`/#donate?project=${slug}`}
-                    className="block w-full text-center py-3.5 rounded-xl text-white font-semibold text-sm"
-                    style={{ background: "#24B5CB" }}
-                  >
-                    Donate to This Project
-                  </a>
+                {hasFunds ? (
+                  <>
+                    <div className="font-[var(--font-dm-serif)] text-3xl mb-1" style={{ color: "#24B5CB" }}>
+                      ${totalRaised.toLocaleString()}
+                    </div>
+                    <p className="text-[#6B7280] text-sm mb-3">raised of ${totalGoal.toLocaleString()} goal</p>
+                    <div className="h-2 rounded-full bg-[#E5E7EB] mb-3">
+                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#24B5CB" }} />
+                    </div>
+                    <p className="text-[#6B7280] text-xs mb-5">{pct}% funded</p>
+                  </>
+                ) : (
+                  <p className="text-[#9CA3AF] text-sm mb-5">Fundraising coming soon.</p>
                 )}
+                <a
+                  href={`/#donate?project=${slug}`}
+                  className="block w-full text-center py-3.5 rounded-xl text-white font-semibold text-sm"
+                  style={{ background: "#24B5CB" }}
+                >
+                  Donate to This Project
+                </a>
                 <p className="text-[#9CA3AF] text-xs text-center mt-3">
                   100% traceable · Bank transfer · WaveNova Yayasan
                 </p>
               </div>
 
-              {/* Active campaigns */}
-              {campaigns.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-[#1F2937] px-1">Active Campaigns</h3>
-                  {campaigns.map((c) => {
-                    const cpct = Math.min(Math.round((c.raised / c.goal) * 100), 100);
-                    return (
-                      <div key={c.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h4 className="font-semibold text-[#1F2937] text-sm">{c.name}</h4>
-                          {c.status === "completed" && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold whitespace-nowrap">Completed</span>
-                          )}
+              {/* Active Funds */}
+              {funds.length > 0 && (
+                <div className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+                  <h3 className="font-semibold text-sm text-[#1F2937] mb-1">Where your donation goes</h3>
+                  <p className="text-xs text-[#9CA3AF] mb-4">Active funds for this project</p>
+                  <div className="space-y-4">
+                    {funds.map((f) => {
+                      const fpct = f.goal > 0 ? Math.min(Math.round((f.raised / f.goal) * 100), 100) : 0;
+                      return (
+                        <div key={f.id}>
+                          <div className="flex items-start justify-between gap-2 mb-1">
+                            <p className="font-medium text-sm text-[#1F2937]">{f.name}</p>
+                            {f.status === "completed" && (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold whitespace-nowrap">Completed</span>
+                            )}
+                          </div>
+                          {f.description && <p className="text-xs text-[#6B7280] mb-1.5">{f.description}</p>}
+                          <div className="flex justify-between text-xs text-[#9CA3AF] mb-1">
+                            <span>${f.raised.toLocaleString()} raised</span>
+                            <span>${f.goal.toLocaleString()} goal · {fpct}%</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-[#E5E7EB]">
+                            <div className="h-full rounded-full" style={{ width: `${fpct}%`, background: f.status === "completed" ? "#059669" : "#24B5CB" }} />
+                          </div>
                         </div>
-                        {c.description && <p className="text-xs text-[#6B7280] mb-2">{c.description}</p>}
-                        <div className="font-[var(--font-dm-serif)] text-2xl mb-0.5" style={{ color: "#24B5CB" }}>
-                          ${c.raised.toLocaleString()}
-                        </div>
-                        <p className="text-[#6B7280] text-xs mb-2">of ${c.goal.toLocaleString()} goal · {cpct}% funded</p>
-                        <div className="h-1.5 rounded-full bg-[#E5E7EB] mb-3">
-                          <div className="h-full rounded-full" style={{ width: `${cpct}%`, background: c.status === "completed" ? "#059669" : "#24B5CB" }} />
-                        </div>
-                        {c.status !== "completed" && (
-                          <a
-                            href={`/#donate?project=${slug}&campaign=${c.id}`}
-                            className="block w-full text-center py-2.5 rounded-xl text-white font-semibold text-sm"
-                            style={{ background: "#24B5CB" }}
-                          >
-                            Fund This →
-                          </a>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -244,7 +293,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </dl>
               </div>
 
-              {/* Back link */}
               <a href="/#projects" className="block text-center text-sm font-medium hover:underline" style={{ color: "#24B5CB" }}>
                 ← All Projects
               </a>

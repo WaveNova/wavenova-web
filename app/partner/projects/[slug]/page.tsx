@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import ImageUpload from "@/app/components/ImageUpload";
-import type { Project, Activity, Campaign } from "@/lib/database.types";
+import type { Project, Activity, Fund, Donation } from "@/lib/database.types";
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -51,7 +51,8 @@ export default function PartnerProjectPage() {
   const [userEmail, setUserEmail] = useState("");
   const [project, setProject] = useState<Project | null>(null);
   const [activities, setActivities] = useState<Activity[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [funds, setFunds] = useState<Fund[]>([]);
+  const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [actionText, setActionText] = useState("");
@@ -62,20 +63,21 @@ export default function PartnerProjectPage() {
   const [editDesc, setEditDesc] = useState("");
   const [editKpis, setEditKpis] = useState<string[]>([]);
   const [editImage, setEditImage] = useState("");
-  const [editGoal, setEditGoal] = useState("");
   const [savingProject, setSavingProject] = useState(false);
   const [saveProjectSuccess, setSaveProjectSuccess] = useState(false);
   const [saveProjectError, setSaveProjectError] = useState("");
 
-  const [newCampaignName, setNewCampaignName] = useState("");
-  const [newCampaignGoal, setNewCampaignGoal] = useState("");
-  const [newCampaignDesc, setNewCampaignDesc] = useState("");
-  const [creatingCampaign, setCreatingCampaign] = useState(false);
-  const [campaignError, setCampaignError] = useState("");
+  const [newFundName, setNewFundName] = useState("");
+  const [newFundGoal, setNewFundGoal] = useState("");
+  const [newFundDesc, setNewFundDesc] = useState("");
+  const [creatingFund, setCreatingFund] = useState(false);
+  const [fundError, setFundError] = useState("");
 
-  const [editingCampaign, setEditingCampaign] = useState<string | null>(null);
-  const [campaignEdits, setCampaignEdits] = useState<Record<string, { name: string; goal: string; description: string; status: string }>>({});
-  const [savingCampaign, setSavingCampaign] = useState<string | null>(null);
+  const [editingFund, setEditingFund] = useState<string | null>(null);
+  const [fundEdits, setFundEdits] = useState<Record<string, { name: string; goal: string; description: string; status: string }>>({});
+  const [savingFund, setSavingFund] = useState<string | null>(null);
+
+  const [allocating, setAllocating] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -89,12 +91,14 @@ export default function PartnerProjectPage() {
       setToken(session.access_token);
       setUserEmail(session.user.email ?? "");
 
-      const [projRes, campRes] = await Promise.all([
+      const [projRes, fundsRes, donationsRes] = await Promise.all([
         fetch(`/api/partner/projects/${slug}`, { headers: { Authorization: `Bearer ${session.access_token}` } }),
-        fetch(`/api/campaigns/by-project/${slug}`),
+        fetch(`/api/funds/by-project/${slug}`),
+        fetch(`/api/partner/projects/${slug}/donations`, { headers: { Authorization: `Bearer ${session.access_token}` } }),
       ]);
       const projData = await projRes.json();
-      const campData = await campRes.json();
+      const fundsData = await fundsRes.json();
+      const donationsData = await donationsRes.json();
 
       if (projData.error) { router.replace("/partner"); return; }
 
@@ -103,13 +107,14 @@ export default function PartnerProjectPage() {
       setEditDesc(projData.project?.description ?? "");
       setEditKpis(projData.project?.kpis ?? []);
       setEditImage(projData.project?.image_url ?? "");
-      setEditGoal(String(projData.project?.goal ?? ""));
 
-      const cams = campData.campaigns ?? [];
-      setCampaigns(cams);
-      const edits: typeof campaignEdits = {};
-      for (const c of cams) edits[c.id] = { name: c.name, goal: String(c.goal), description: c.description ?? "", status: c.status };
-      setCampaignEdits(edits);
+      const fs = fundsData.funds ?? [];
+      setFunds(fs);
+      const edits: typeof fundEdits = {};
+      for (const f of fs) edits[f.id] = { name: f.name, goal: String(f.goal), description: f.description ?? "", status: f.status };
+      setFundEdits(edits);
+
+      setDonations(donationsData.donations ?? []);
       setLoading(false);
     });
   }, [router, slug]);
@@ -140,48 +145,73 @@ export default function PartnerProjectPage() {
     const res = await fetch(`/api/partner/projects/${slug}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ description: editDesc, kpis: editKpis, image_url: editImage, goal: parseFloat(editGoal) }),
+      body: JSON.stringify({ description: editDesc, kpis: editKpis, image_url: editImage }),
     });
     const data = await res.json();
     setSavingProject(false);
     if (data.success) {
-      setProject((prev) => prev ? { ...prev, description: editDesc, kpis: editKpis, image_url: editImage, goal: parseFloat(editGoal) } : prev);
+      setProject((prev) => prev ? { ...prev, description: editDesc, kpis: editKpis, image_url: editImage } : prev);
       setSaveProjectSuccess(true); setTimeout(() => setSaveProjectSuccess(false), 3000);
     } else setSaveProjectError(data.error ?? "Save failed");
   };
 
-  const createCampaign = async (e: React.FormEvent) => {
+  const createFund = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || !project) return;
-    setCreatingCampaign(true); setCampaignError("");
-    const res = await fetch("/api/campaigns", {
+    setCreatingFund(true); setFundError("");
+    const res = await fetch("/api/funds", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ project_slug: project.slug, name: newCampaignName, goal: newCampaignGoal, description: newCampaignDesc || null }),
+      body: JSON.stringify({ project_slug: project.slug, name: newFundName, goal: newFundGoal, description: newFundDesc || null }),
     });
     const data = await res.json();
-    setCreatingCampaign(false);
-    if (data.success && data.campaign) {
-      setCampaigns((prev) => [...prev, data.campaign]);
-      setCampaignEdits((prev) => ({ ...prev, [data.campaign.id]: { name: data.campaign.name, goal: String(data.campaign.goal), description: data.campaign.description ?? "", status: data.campaign.status } }));
-      setNewCampaignName(""); setNewCampaignGoal(""); setNewCampaignDesc("");
-    } else setCampaignError(data.error ?? "Failed");
+    setCreatingFund(false);
+    if (data.success && data.fund) {
+      setFunds((prev) => [...prev, data.fund]);
+      setFundEdits((prev) => ({ ...prev, [data.fund.id]: { name: data.fund.name, goal: String(data.fund.goal), description: data.fund.description ?? "", status: data.fund.status } }));
+      setNewFundName(""); setNewFundGoal(""); setNewFundDesc("");
+    } else setFundError(data.error ?? "Failed");
   };
 
-  const saveCampaign = async (id: string) => {
+  const saveFund = async (id: string) => {
     if (!token) return;
-    setSavingCampaign(id);
-    const e = campaignEdits[id];
-    const res = await fetch(`/api/campaigns/${id}`, {
+    setSavingFund(id);
+    const e = fundEdits[id];
+    const res = await fetch(`/api/funds/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name: e.name, goal: parseFloat(e.goal), description: e.description || null, status: e.status }),
     });
     const data = await res.json();
-    setSavingCampaign(null);
+    setSavingFund(null);
     if (data.success) {
-      setCampaigns((prev) => prev.map((c) => c.id === id ? { ...c, name: e.name, goal: parseFloat(e.goal), description: e.description || null, status: e.status as Campaign["status"] } : c));
-      setEditingCampaign(null);
+      setFunds((prev) => prev.map((f) => f.id === id ? { ...f, name: e.name, goal: parseFloat(e.goal), description: e.description || null, status: e.status as Fund["status"] } : f));
+      setEditingFund(null);
+    }
+  };
+
+  const allocateDonation = async (donationId: string, fundId: string | null) => {
+    if (!token) return;
+    setAllocating(donationId);
+    const res = await fetch(`/api/partner/donations/${donationId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ fund_id: fundId }),
+    });
+    const data = await res.json();
+    setAllocating(null);
+    if (data.success) {
+      setDonations((prev) => prev.map((d) => d.id === donationId ? { ...d, fund_id: fundId } : d));
+      // Update fund raised totals locally
+      if (fundId) {
+        setFunds((prev) => prev.map((f) => {
+          const d = donations.find((x) => x.id === donationId);
+          if (!d) return f;
+          if (f.id === fundId) return { ...f, raised: f.raised + d.amount_usd };
+          if (f.id === d.fund_id) return { ...f, raised: Math.max(0, f.raised - d.amount_usd) };
+          return f;
+        }));
+      }
     }
   };
 
@@ -215,19 +245,13 @@ export default function PartnerProjectPage() {
           <>
             {/* Project overview */}
             <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-              <div className="flex items-start justify-between gap-4 mb-4">
+              <div className="flex items-start justify-between gap-4">
                 <div>
                   <h1 className="font-[var(--font-dm-serif)] text-2xl text-[#1A7A8A]">{project.name}</h1>
                   <p className="text-sm text-[#6B7280]">{project.location}</p>
                 </div>
                 <span className="text-xs px-3 py-1 rounded-full font-semibold bg-emerald-50 text-emerald-700 whitespace-nowrap">{project.status}</span>
               </div>
-              <div className="h-2 rounded-full bg-[#E5E7EB] mb-2">
-                <div className="h-full rounded-full" style={{ width: `${Math.min(100, (project.raised / project.goal) * 100)}%`, background: "#24B5CB" }} />
-              </div>
-              <p className="text-sm text-[#6B7280]">
-                <span className="font-semibold text-[#1F2937]">${project.raised.toLocaleString()}</span> raised of ${project.goal.toLocaleString()} goal
-              </p>
             </div>
 
             {/* Edit project content */}
@@ -240,22 +264,11 @@ export default function PartnerProjectPage() {
                     className="w-full border border-[#D1D5DB] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#24B5CB] resize-none" />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#6B7280] mb-2">Impact Metrics (KPIs)</label>
+                  <label className="block text-xs font-semibold text-[#6B7280] mb-2">Impact Metrics</label>
                   <KpiEditor kpis={editKpis} onChange={setEditKpis} />
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-[#6B7280] mb-1">Funding Goal ($)</label>
-                    <input type="number" min="0" value={editGoal} onChange={(e) => setEditGoal(e.target.value)}
-                      className="w-full border border-[#D1D5DB] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
-                  </div>
-                  <div>
-                    <ImageUpload
-                      label="Project Image"
-                      value={editImage}
-                      onChange={setEditImage}
-                    />
-                  </div>
+                <div>
+                  <ImageUpload label="Project Image" value={editImage} onChange={setEditImage} />
                 </div>
                 {saveProjectError && <p className="text-red-600 text-sm">{saveProjectError}</p>}
                 <button type="submit" disabled={savingProject}
@@ -266,29 +279,30 @@ export default function PartnerProjectPage() {
               </form>
             </div>
 
-            {/* Campaigns */}
+            {/* Funds */}
             <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-              <h2 className="font-semibold text-[#1F2937] mb-4">Fundraising Campaigns</h2>
-              {campaigns.length > 0 && (
+              <h2 className="font-semibold text-[#1F2937] mb-1">Fundraising Funds</h2>
+              <p className="text-xs text-[#9CA3AF] mb-4">Each fund represents a specific need or goal for this project.</p>
+              {funds.length > 0 && (
                 <div className="space-y-3 mb-5">
-                  {campaigns.map((c) => {
-                    const cpct = Math.min(Math.round((c.raised / c.goal) * 100), 100);
-                    const isEditing = editingCampaign === c.id;
+                  {funds.map((f) => {
+                    const fpct = f.goal > 0 ? Math.min(Math.round((f.raised / f.goal) * 100), 100) : 0;
+                    const isEditing = editingFund === f.id;
                     return (
-                      <div key={c.id} className="border border-[#E5E7EB] rounded-xl p-4">
+                      <div key={f.id} className="border border-[#E5E7EB] rounded-xl p-4">
                         {isEditing ? (
                           <div className="space-y-3">
-                            <input value={campaignEdits[c.id]?.name ?? ""} onChange={(e) => setCampaignEdits((p) => ({ ...p, [c.id]: { ...p[c.id], name: e.target.value } }))}
-                              className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB]" placeholder="Campaign name" />
+                            <input value={fundEdits[f.id]?.name ?? ""} onChange={(e) => setFundEdits((p) => ({ ...p, [f.id]: { ...p[f.id], name: e.target.value } }))}
+                              className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB]" placeholder="Fund name" />
                             <div className="flex gap-2">
                               <div className="flex-1">
                                 <label className="text-xs text-[#6B7280]">Goal ($)</label>
-                                <input type="number" value={campaignEdits[c.id]?.goal ?? ""} onChange={(e) => setCampaignEdits((p) => ({ ...p, [c.id]: { ...p[c.id], goal: e.target.value } }))}
+                                <input type="number" value={fundEdits[f.id]?.goal ?? ""} onChange={(e) => setFundEdits((p) => ({ ...p, [f.id]: { ...p[f.id], goal: e.target.value } }))}
                                   className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB]" />
                               </div>
                               <div>
                                 <label className="text-xs text-[#6B7280]">Status</label>
-                                <select value={campaignEdits[c.id]?.status ?? "active"} onChange={(e) => setCampaignEdits((p) => ({ ...p, [c.id]: { ...p[c.id], status: e.target.value } }))}
+                                <select value={fundEdits[f.id]?.status ?? "active"} onChange={(e) => setFundEdits((p) => ({ ...p, [f.id]: { ...p[f.id], status: e.target.value } }))}
                                   className="border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB]">
                                   <option value="active">Active</option>
                                   <option value="completed">Completed</option>
@@ -296,30 +310,30 @@ export default function PartnerProjectPage() {
                                 </select>
                               </div>
                             </div>
-                            <textarea value={campaignEdits[c.id]?.description ?? ""} onChange={(e) => setCampaignEdits((p) => ({ ...p, [c.id]: { ...p[c.id], description: e.target.value } }))}
+                            <textarea value={fundEdits[f.id]?.description ?? ""} onChange={(e) => setFundEdits((p) => ({ ...p, [f.id]: { ...p[f.id], description: e.target.value } }))}
                               rows={2} placeholder="Description (optional)"
                               className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB] resize-none" />
                             <div className="flex gap-2">
-                              <button onClick={() => saveCampaign(c.id)} disabled={savingCampaign === c.id}
+                              <button onClick={() => saveFund(f.id)} disabled={savingFund === f.id}
                                 className="px-4 py-1.5 rounded-lg text-white text-sm font-semibold disabled:opacity-60" style={{ background: "#24B5CB" }}>
-                                {savingCampaign === c.id ? "Saving…" : "Save"}
+                                {savingFund === f.id ? "Saving…" : "Save"}
                               </button>
-                              <button onClick={() => setEditingCampaign(null)} className="px-4 py-1.5 rounded-lg text-sm text-[#6B7280] border border-[#D1D5DB]">Cancel</button>
+                              <button onClick={() => setEditingFund(null)} className="px-4 py-1.5 rounded-lg text-sm text-[#6B7280] border border-[#D1D5DB]">Cancel</button>
                             </div>
                           </div>
                         ) : (
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm text-[#1F2937]">{c.name}</p>
-                              {c.description && <p className="text-xs text-[#6B7280] mt-0.5">{c.description}</p>}
-                              <p className="text-xs text-[#9CA3AF] mt-1">${c.raised.toLocaleString()} / ${c.goal.toLocaleString()} · {cpct}%</p>
+                              <p className="font-medium text-sm text-[#1F2937]">{f.name}</p>
+                              {f.description && <p className="text-xs text-[#6B7280] mt-0.5">{f.description}</p>}
+                              <p className="text-xs text-[#9CA3AF] mt-1">${f.raised.toLocaleString()} / ${f.goal.toLocaleString()} · {fpct}%</p>
                               <div className="mt-1.5 h-1 rounded-full bg-[#E5E7EB]">
-                                <div className="h-full rounded-full" style={{ width: `${cpct}%`, background: "#24B5CB" }} />
+                                <div className="h-full rounded-full" style={{ width: `${fpct}%`, background: "#24B5CB" }} />
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${c.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-[#F3F4F6] text-[#6B7280]"}`}>{c.status}</span>
-                              <button onClick={() => setEditingCampaign(c.id)} className="text-xs font-medium hover:underline" style={{ color: "#24B5CB" }}>Edit</button>
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${f.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-[#F3F4F6] text-[#6B7280]"}`}>{f.status}</span>
+                              <button onClick={() => setEditingFund(f.id)} className="text-xs font-medium hover:underline" style={{ color: "#24B5CB" }}>Edit</button>
                             </div>
                           </div>
                         )}
@@ -328,21 +342,50 @@ export default function PartnerProjectPage() {
                   })}
                 </div>
               )}
-              <h3 className="text-sm font-semibold text-[#1F2937] mb-3">New Campaign</h3>
-              <form onSubmit={createCampaign} className="space-y-3">
-                <input value={newCampaignName} onChange={(e) => setNewCampaignName(e.target.value)} required placeholder="Campaign name (e.g. Facility Upgrade Phase 2)"
+              <h3 className="text-sm font-semibold text-[#1F2937] mb-3">New Fund</h3>
+              <form onSubmit={createFund} className="space-y-3">
+                <input value={newFundName} onChange={(e) => setNewFundName(e.target.value)} required placeholder="Fund name (e.g. Facility Upgrade)"
                   className="w-full border border-[#D1D5DB] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
-                <input type="number" value={newCampaignGoal} onChange={(e) => setNewCampaignGoal(e.target.value)} required placeholder="Goal ($)" min="1"
+                <input type="number" value={newFundGoal} onChange={(e) => setNewFundGoal(e.target.value)} required placeholder="Goal ($)" min="1"
                   className="w-full border border-[#D1D5DB] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
-                <textarea value={newCampaignDesc} onChange={(e) => setNewCampaignDesc(e.target.value)} rows={2} placeholder="Description (optional)"
+                <textarea value={newFundDesc} onChange={(e) => setNewFundDesc(e.target.value)} rows={2} placeholder="Description (optional)"
                   className="w-full border border-[#D1D5DB] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#24B5CB] resize-none" />
-                {campaignError && <p className="text-red-600 text-sm">{campaignError}</p>}
-                <button type="submit" disabled={creatingCampaign}
+                {fundError && <p className="text-red-600 text-sm">{fundError}</p>}
+                <button type="submit" disabled={creatingFund}
                   className="px-6 py-2.5 rounded-lg text-white text-sm font-semibold disabled:opacity-60" style={{ background: "#24B5CB" }}>
-                  {creatingCampaign ? "Creating…" : "Create Campaign"}
+                  {creatingFund ? "Creating…" : "Create Fund"}
                 </button>
               </form>
             </div>
+
+            {/* Confirmed Donations */}
+            {donations.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+                <h2 className="font-semibold text-[#1F2937] mb-1">Confirmed Donations</h2>
+                <p className="text-xs text-[#9CA3AF] mb-4">Allocate each donation to a fund so its progress is tracked.</p>
+                <div className="space-y-3">
+                  {donations.map((d) => (
+                    <div key={d.id} className="flex items-center gap-3 border border-[#E5E7EB] rounded-xl p-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-[#1F2937]">${d.amount_usd.toLocaleString()}</p>
+                        <p className="text-xs text-[#9CA3AF]">{d.donor_name ?? "Anonymous"} · {timeAgo(d.created_at)}</p>
+                      </div>
+                      <select
+                        value={d.fund_id ?? ""}
+                        disabled={allocating === d.id}
+                        onChange={(e) => allocateDonation(d.id, e.target.value || null)}
+                        className="border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:border-[#24B5CB] max-w-[160px]"
+                      >
+                        <option value="">Unallocated</option>
+                        {funds.map((f) => (
+                          <option key={f.id} value={f.id}>{f.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Post update */}
             <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">

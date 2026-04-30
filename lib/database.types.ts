@@ -49,6 +49,7 @@ export interface Donation {
   tip_amount: number;
   donor_name: string | null;
   donor_email: string;
+  fund_id: string | null;
   created_at: string;
 }
 
@@ -68,16 +69,16 @@ export interface Metrics {
   updated_at: string;
 }
 
-export type CampaignStatus = "active" | "completed" | "archived";
+export type FundStatus = "active" | "completed" | "archived";
 
-export interface Campaign {
+export interface Fund {
   id: string;
   project_slug: string;
   name: string;
   description: string | null;
   goal: number;
   raised: number;
-  status: CampaignStatus;
+  status: FundStatus;
   created_at: string;
 }
 
@@ -98,6 +99,7 @@ export interface Database {
       donations: { Row: Donation; Insert: Omit<Donation, "id" | "created_at">; Update: Partial<Donation> };
       activities: { Row: Activity; Insert: Omit<Activity, "id" | "created_at">; Update: Partial<Activity> };
       metrics: { Row: Metrics; Insert: Omit<Metrics, "id" | "updated_at">; Update: Partial<Metrics> };
+      funds: { Row: Fund; Insert: Omit<Fund, "id" | "created_at">; Update: Partial<Fund> };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import ImageUpload from "@/app/components/ImageUpload";
-import type { Donation, Project, UserRole, Campaign, Partner } from "@/lib/database.types";
+import type { Donation, Project, UserRole, Fund, Partner } from "@/lib/database.types";
 
 type Tab = "Donations" | "Projects" | "Metrics" | "Partners";
 
@@ -173,10 +173,10 @@ function KpiEditor({ kpis, onChange }: { kpis: string[]; onChange: (next: string
   );
 }
 
-const CAMPAIGN_STATUS_OPTIONS: Campaign["status"][] = ["active", "completed", "archived"];
+const FUND_STATUS_OPTIONS: Fund["status"][] = ["active", "completed", "archived"];
 
-function ProjectCampaigns({ projectSlug, token }: { projectSlug: string; token: string }) {
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+function ProjectFunds({ projectSlug, token }: { projectSlug: string; token: string }) {
+  const [funds, setFunds] = useState<Fund[]>([]);
   const [loading, setLoading] = useState(true);
   const [editId, setEditId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ name: "", description: "", goal: "", status: "active" });
@@ -187,29 +187,29 @@ function ProjectCampaigns({ projectSlug, token }: { projectSlug: string; token: 
   const api = authFetch(token);
 
   useEffect(() => {
-    fetch(`/api/campaigns/by-project/${projectSlug}`)
+    fetch(`/api/funds/by-project/${projectSlug}`)
       .then((r) => r.json())
-      .then(({ campaigns: c }) => { setCampaigns(c ?? []); setLoading(false); })
+      .then(({ funds: f }) => { setFunds(f ?? []); setLoading(false); })
       .catch(() => setLoading(false));
   }, [projectSlug]);
 
-  const startEdit = (c: Campaign) => {
-    setEditId(c.id);
-    setEditForm({ name: c.name, description: c.description ?? "", goal: String(c.goal), status: c.status });
+  const startEdit = (f: Fund) => {
+    setEditId(f.id);
+    setEditForm({ name: f.name, description: f.description ?? "", goal: String(f.goal), status: f.status });
   };
 
   const saveEdit = async () => {
     if (!editId) return;
     setSavingEdit(true);
     setError("");
-    const res = await api(`/api/campaigns/${editId}`, {
+    const res = await api(`/api/funds/${editId}`, {
       method: "PATCH",
       body: JSON.stringify({ name: editForm.name, description: editForm.description, goal: parseFloat(editForm.goal), status: editForm.status }),
     });
     const data = await res.json();
     setSavingEdit(false);
     if (data.success) {
-      setCampaigns((prev) => prev.map((c) => c.id === editId ? { ...c, ...editForm, goal: parseFloat(editForm.goal), status: editForm.status as Campaign["status"] } : c));
+      setFunds((prev) => prev.map((f) => f.id === editId ? { ...f, ...editForm, goal: parseFloat(editForm.goal), status: editForm.status as Fund["status"] } : f));
       setEditId(null);
     } else setError(data.error ?? "Save failed");
   };
@@ -218,40 +218,40 @@ function ProjectCampaigns({ projectSlug, token }: { projectSlug: string; token: 
     e.preventDefault();
     setCreating(true);
     setError("");
-    const res = await api("/api/campaigns", {
+    const res = await api("/api/funds", {
       method: "POST",
       body: JSON.stringify({ project_slug: projectSlug, name: newForm.name, goal: parseFloat(newForm.goal) }),
     });
     const data = await res.json();
     setCreating(false);
-    if (data.campaign) {
-      setCampaigns((prev) => [...prev, data.campaign]);
+    if (data.fund) {
+      setFunds((prev) => [...prev, data.fund]);
       setNewForm({ name: "", goal: "" });
     } else setError(data.error ?? "Create failed");
   };
 
-  if (loading) return <p className="text-xs text-[#9CA3AF] py-2">Loading campaigns…</p>;
+  if (loading) return <p className="text-xs text-[#9CA3AF] py-2">Loading funds…</p>;
 
   return (
     <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
-      <h4 className="text-sm font-semibold text-[#1F2937] mb-3">Campaigns</h4>
+      <h4 className="text-sm font-semibold text-[#1F2937] mb-3">Funds</h4>
       {error && <p className="text-red-600 text-xs mb-2">{error}</p>}
       <div className="space-y-2 mb-4">
-        {campaigns.length === 0 && <p className="text-xs text-[#9CA3AF]">No campaigns yet.</p>}
-        {campaigns.map((c) => (
-          <div key={c.id} className="rounded-xl border border-[#E5E7EB] p-3">
-            {editId === c.id ? (
+        {funds.length === 0 && <p className="text-xs text-[#9CA3AF]">No funds yet.</p>}
+        {funds.map((f) => (
+          <div key={f.id} className="rounded-xl border border-[#E5E7EB] p-3">
+            {editId === f.id ? (
               <div className="space-y-2">
-                <input value={editForm.name} onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                <input value={editForm.name} onChange={(e) => setEditForm((x) => ({ ...x, name: e.target.value }))}
                   placeholder="Name" className="w-full border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
-                <input value={editForm.description} onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                <input value={editForm.description} onChange={(e) => setEditForm((x) => ({ ...x, description: e.target.value }))}
                   placeholder="Description (optional)" className="w-full border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
                 <div className="flex gap-2">
-                  <input type="number" min="0" value={editForm.goal} onChange={(e) => setEditForm((f) => ({ ...f, goal: e.target.value }))}
+                  <input type="number" min="0" value={editForm.goal} onChange={(e) => setEditForm((x) => ({ ...x, goal: e.target.value }))}
                     placeholder="Goal $" className="w-28 border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
-                  <select value={editForm.status} onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
+                  <select value={editForm.status} onChange={(e) => setEditForm((x) => ({ ...x, status: e.target.value }))}
                     className="border border-[#D1D5DB] rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]">
-                    {CAMPAIGN_STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+                    {FUND_STATUS_OPTIONS.map((s) => <option key={s}>{s}</option>)}
                   </select>
                   <button onClick={saveEdit} disabled={savingEdit}
                     className="px-3 py-1.5 rounded-lg text-white text-xs font-semibold disabled:opacity-60" style={{ background: "#24B5CB" }}>
@@ -264,12 +264,12 @@ function ProjectCampaigns({ projectSlug, token }: { projectSlug: string; token: 
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-medium text-[#1F2937] truncate">{c.name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${c.status === "completed" ? "bg-emerald-50 text-emerald-700" : c.status === "archived" ? "bg-gray-100 text-gray-500" : "bg-[#EDF9FB] text-[#1A7A8A]"}`}>{c.status}</span>
+                    <span className="text-sm font-medium text-[#1F2937] truncate">{f.name}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${f.status === "completed" ? "bg-emerald-50 text-emerald-700" : f.status === "archived" ? "bg-gray-100 text-gray-500" : "bg-[#EDF9FB] text-[#1A7A8A]"}`}>{f.status}</span>
                   </div>
-                  <p className="text-xs text-[#9CA3AF] mt-0.5">${c.raised.toLocaleString()} / ${c.goal.toLocaleString()} · {Math.min(100, Math.round((c.raised / c.goal) * 100))}%</p>
+                  <p className="text-xs text-[#9CA3AF] mt-0.5">${f.raised.toLocaleString()} / ${f.goal.toLocaleString()} · {Math.min(100, Math.round((f.raised / f.goal) * 100))}%</p>
                 </div>
-                <button onClick={() => startEdit(c)} className="text-xs text-[#24B5CB] hover:underline shrink-0 font-medium">Edit</button>
+                <button onClick={() => startEdit(f)} className="text-xs text-[#24B5CB] hover:underline shrink-0 font-medium">Edit</button>
               </div>
             )}
           </div>
@@ -277,7 +277,7 @@ function ProjectCampaigns({ projectSlug, token }: { projectSlug: string; token: 
       </div>
       <form onSubmit={create} className="flex gap-2 items-end">
         <div className="flex-1">
-          <label className="text-xs text-[#6B7280] mb-1 block">New campaign name</label>
+          <label className="text-xs text-[#6B7280] mb-1 block">New fund name</label>
           <input required value={newForm.name} onChange={(e) => setNewForm((f) => ({ ...f, name: e.target.value }))}
             placeholder="e.g. May Equipment Run"
             className="w-full border border-[#D1D5DB] rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
@@ -330,7 +330,7 @@ function ProjectCard({ project, token }: { project: Project; token: string }) {
     setContentError("");
     const res = await api(`/api/admin/projects/${project.slug}`, {
       method: "PATCH",
-      body: JSON.stringify({ description, kpis, image_url: imageUrl, goal: parseFloat(goal) }),
+      body: JSON.stringify({ description, kpis, image_url: imageUrl }),
     });
     const data = await res.json();
     setContentSaving(false);
@@ -389,12 +389,7 @@ function ProjectCard({ project, token }: { project: Project; token: string }) {
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
                 className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB] resize-none bg-white" />
             </div>
-            <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1">Goal&nbsp;$</label>
-              <input type="number" min="0" value={goal} onChange={(e) => setGoal(e.target.value)}
-                className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB] bg-white" />
-            </div>
-            <div>
+            <div className="sm:col-span-2">
               <ImageUpload value={imageUrl} onChange={setImageUrl} />
             </div>
             <div className="sm:col-span-2">
@@ -409,7 +404,7 @@ function ProjectCard({ project, token }: { project: Project; token: string }) {
             {contentSaving ? "Saving…" : contentSaved ? "Content Saved ✓" : "Save Content"}
           </button>
 
-          <ProjectCampaigns projectSlug={project.slug} token={token} />
+          <ProjectFunds projectSlug={project.slug} token={token} />
         </div>
       )}
     </div>
@@ -424,7 +419,7 @@ function ProjectsTab({ token }: { token: string }) {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
   const [showNew, setShowNew] = useState(false);
-  const [newForm, setNewForm] = useState({ slug: "", name: "", partner_slug: "", location: "", category: "Sorting Stations", status: "Operational", image_url: "", goal: "", description: "", since_year: "" });
+  const [newForm, setNewForm] = useState({ slug: "", name: "", partner_slug: "", location: "", category: "Sorting Stations", status: "Operational", image_url: "", description: "", since_year: "" });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
   const api = authFetch(token);
@@ -448,12 +443,12 @@ function ProjectsTab({ token }: { token: string }) {
     setCreating(true); setCreateError("");
     const res = await api("/api/admin/projects", {
       method: "POST",
-      body: JSON.stringify({ ...newForm, goal: newForm.goal ? parseFloat(newForm.goal) : 5000 }),
+      body: JSON.stringify({ ...newForm }),
     });
     const data = await res.json();
     setCreating(false);
     if (data.success) {
-      setNewForm({ slug: "", name: "", partner_slug: "", location: "", category: "Sorting Stations", status: "Operational", image_url: "", goal: "", description: "", since_year: "" });
+      setNewForm({ slug: "", name: "", partner_slug: "", location: "", category: "Sorting Stations", status: "Operational", image_url: "", description: "", since_year: "" });
       setShowNew(false); load();
     } else setCreateError(data.error ?? "Failed");
   };
@@ -520,11 +515,6 @@ function ProjectsTab({ token }: { token: string }) {
                   value={newForm.image_url}
                   onChange={(url) => setNewForm((f) => ({ ...f, image_url: url }))}
                 />
-              </div>
-              <div>
-                <label className="block text-xs text-[#6B7280] mb-1">Goal ($)</label>
-                <input type="number" min="0" value={newForm.goal} onChange={(e) => setNewForm((f) => ({ ...f, goal: e.target.value }))} placeholder="5000"
-                  className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB]" />
               </div>
               <div>
                 <label className="block text-xs text-[#6B7280] mb-1">Operating Since</label>

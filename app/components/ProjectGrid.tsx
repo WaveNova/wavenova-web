@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import type { Project, ProjectCategory } from "@/lib/database.types";
+import type { Project, ProjectCategory, Fund } from "@/lib/database.types";
 
 type FilterValue = "All" | ProjectCategory;
 
@@ -27,8 +27,12 @@ const FALLBACK_PROJECTS: Project[] = [
   { id: "5", slug: "kuta-honest-impact", name: "Honest Impact — Kuta", partner_slug: "honest-made", location: "Central Lombok", status: "Operational", category: "Waste Management", kpis: ["Daily sweepers", "River barriers", "Residential"], raised: 4200, goal: 6000, image_url: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=70", since_year: "2021", description: null, created_at: "" },
 ];
 
-function ProjectCard({ project }: { project: Project }) {
-  const pct = Math.min(Math.round((project.raised / project.goal) * 100), 100);
+type FundTotals = Record<string, { raised: number; goal: number }>;
+
+function ProjectCard({ project, fundTotals }: { project: Project; fundTotals: FundTotals }) {
+  const totals = fundTotals[project.slug];
+  const hasFunds = totals && totals.goal > 0;
+  const pct = hasFunds ? Math.min(Math.round((totals.raised / totals.goal) * 100), 100) : 0;
   const status = STATUS_STYLES[project.status] ?? STATUS_STYLES["Operational"];
 
   return (
@@ -54,15 +58,21 @@ function ProjectCard({ project }: { project: Project }) {
             </span>
           ))}
         </div>
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-1.5">
-            <span className="font-semibold text-[#1F2937]">${project.raised.toLocaleString()}</span>
-            <span className="text-[#6B7280]">of ${project.goal.toLocaleString()} goal</span>
+        {hasFunds ? (
+          <div className="mb-4">
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="font-semibold text-[#1F2937]">${totals.raised.toLocaleString()}</span>
+              <span className="text-[#6B7280]">of ${totals.goal.toLocaleString()} goal</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-[#E5E7EB]">
+              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: "#24B5CB" }} />
+            </div>
           </div>
-          <div className="h-1.5 rounded-full bg-[#E5E7EB]">
-            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: "#24B5CB" }} />
+        ) : (
+          <div className="mb-4 h-8 flex items-center">
+            <span className="text-xs text-[#9CA3AF]">Funds coming soon</span>
           </div>
-        </div>
+        )}
         <a href={`/projects/${project.slug}`} className="flex items-center gap-1 text-sm font-semibold hover:underline" style={{ color: "#24B5CB" }}>
           Learn More →
         </a>
@@ -74,14 +84,22 @@ function ProjectCard({ project }: { project: Project }) {
 export default function ProjectGrid({ projects }: { projects: Project[] }) {
   const [active, setActive] = useState<FilterValue>("All");
   const [liveProjects, setLiveProjects] = useState<Project[]>(projects);
+  const [fundTotals, setFundTotals] = useState<FundTotals>({});
 
   useEffect(() => {
-    supabase
-      .from("projects")
-      .select("*")
-      .neq("slug", "general")
-      .order("created_at", { ascending: true })
-      .then(({ data }) => { if (data && data.length > 0) setLiveProjects(data); });
+    Promise.all([
+      supabase.from("projects").select("*").neq("slug", "general").order("created_at", { ascending: true }),
+      supabase.from("funds").select("project_slug, raised, goal").eq("status", "active"),
+    ]).then(([projRes, fundsRes]) => {
+      if (projRes.data && projRes.data.length > 0) setLiveProjects(projRes.data);
+      const totals: FundTotals = {};
+      for (const f of (fundsRes.data ?? []) as Pick<Fund, "project_slug" | "raised" | "goal">[]) {
+        if (!totals[f.project_slug]) totals[f.project_slug] = { raised: 0, goal: 0 };
+        totals[f.project_slug].raised += f.raised;
+        totals[f.project_slug].goal += f.goal;
+      }
+      setFundTotals(totals);
+    });
   }, []);
 
   const data = liveProjects.length > 0 ? liveProjects : FALLBACK_PROJECTS;
@@ -111,7 +129,7 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
           ))}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filtered.map((p) => <ProjectCard key={p.id} project={p} />)}
+          {filtered.map((p) => <ProjectCard key={p.id} project={p} fundTotals={fundTotals} />)}
         </div>
       </div>
     </section>
