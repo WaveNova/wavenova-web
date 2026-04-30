@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import type { Project, ProjectCategory } from "@/lib/database.types";
 
 type FilterValue = "All" | ProjectCategory;
@@ -72,7 +73,18 @@ function ProjectCard({ project }: { project: Project }) {
 
 export default function ProjectGrid({ projects }: { projects: Project[] }) {
   const [active, setActive] = useState<FilterValue>("All");
-  const data = projects.length > 0 ? projects : FALLBACK_PROJECTS;
+  const [liveProjects, setLiveProjects] = useState<Project[]>(projects);
+
+  useEffect(() => {
+    supabase
+      .from("projects")
+      .select("*")
+      .neq("slug", "general")
+      .order("created_at", { ascending: true })
+      .then(({ data }) => { if (data && data.length > 0) setLiveProjects(data); });
+  }, []);
+
+  const data = liveProjects.length > 0 ? liveProjects : FALLBACK_PROJECTS;
   const filtered = active === "All" ? data : data.filter((p) => p.category === active);
 
   return (
