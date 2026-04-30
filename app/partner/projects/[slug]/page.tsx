@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import ImageUpload from "@/app/components/ImageUpload";
 import type { Project, Activity, Campaign } from "@/lib/database.types";
 
 function timeAgo(iso: string) {
@@ -249,9 +250,11 @@ export default function PartnerProjectPage() {
                       className="w-full border border-[#D1D5DB] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-[#6B7280] mb-1">Image URL</label>
-                    <input type="url" value={editImage} onChange={(e) => setEditImage(e.target.value)} placeholder="https://…"
-                      className="w-full border border-[#D1D5DB] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#24B5CB]" />
+                    <ImageUpload
+                      label="Project Image"
+                      value={editImage}
+                      onChange={setEditImage}
+                    />
                   </div>
                 </div>
                 {saveProjectError && <p className="text-red-600 text-sm">{saveProjectError}</p>}

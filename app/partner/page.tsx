@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
+import ImageUpload from "@/app/components/ImageUpload";
 import type { Project } from "@/lib/database.types";
 
 const PROJECT_CATEGORY_OPTIONS = ["Sorting Stations", "Waste Management"];
@@ -159,10 +160,12 @@ export default function PartnerPage() {
                       </select>
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-medium text-[#6B7280] mb-1">Image URL *</label>
-                      <input required type="url" value={newForm.image_url} onChange={(e) => setNewForm((f) => ({ ...f, image_url: e.target.value }))}
-                        placeholder="https://…"
-                        className="w-full border border-[#D1D5DB] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#24B5CB]" />
+                      <ImageUpload
+                        label="Project Image"
+                        required
+                        value={newForm.image_url}
+                        onChange={(url) => setNewForm((f) => ({ ...f, image_url: url }))}
+                      />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-[#6B7280] mb-1">Funding Goal ($)</label>

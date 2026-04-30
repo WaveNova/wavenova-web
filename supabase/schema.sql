@@ -119,6 +119,17 @@ create policy "Donors can read own record" on donors for select using (auth.jwt(
 create policy "Anyone can insert donations" on donations for insert with check (true);
 create policy "Donors can read own donations" on donations for select using (donor_email = auth.jwt() ->> 'email');
 
+-- Storage: project-images bucket
+-- Create via Dashboard: Storage → New Bucket → "project-images" → Public ON
+-- Then run these policies:
+create policy "Public read project images"
+  on storage.objects for select
+  using (bucket_id = 'project-images');
+
+create policy "Authenticated users can upload project images"
+  on storage.objects for insert
+  with check (bucket_id = 'project-images' and auth.role() = 'authenticated');
+
 -- ============================================================
 -- SEED DATA
 -- ============================================================
