@@ -86,7 +86,7 @@ export default function Hero({ totalKg }: { totalKg: number }) {
       <div className="absolute inset-0 bg-gradient-to-b from-[rgba(26,122,138,0.75)] via-[rgba(26,122,138,0.65)] to-[rgba(10,50,60,0.80)]" />
 
       <nav className="absolute top-0 left-0 right-0 flex items-center justify-between px-6 py-5 z-10">
-        <Image src="/logo.png" alt="WaveNova" width={160} height={48} className="h-10 w-auto brightness-0 invert" />
+        <Image src="/logo.png" alt="WaveNova" width={220} height={64} className="h-14 w-auto brightness-0 invert" />
         <div className="hidden sm:flex items-center gap-3">
           {authState === "signed-in" ? (
             <a
