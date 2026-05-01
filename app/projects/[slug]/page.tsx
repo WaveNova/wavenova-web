@@ -8,7 +8,7 @@ import Footer from "@/app/components/Footer";
 export const revalidate = 60;
 
 const FALLBACK_PROJECTS: Project[] = [
-  { id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner_slug: "sbca", location: "South Lombok", status: "Operational", category: "Sorting Stations", kpis: ["5 years running", "12,400 KG", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=800&q=70", since_year: "2021", description: "The original Blue Loop station — WaveNova's Chapter 1. SBCA has been collecting, sorting, and selling plastic waste from South Lombok's beaches for 5 years.", created_at: "" },
+  { id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner_slug: "sbca", location: "South Lombok", status: "Operational", category: "Sorting Stations", kpis: ["5 years running", "12,400 KG collected", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=800&q=70", since_year: "2021", description: "The original Blue Loop station — WaveNova's Chapter 1. SBCA has been collecting, sorting, and selling plastic waste from South Lombok's beaches for 5 years.", created_at: "" },
   { id: "2", slug: "mawun", name: "Mawun Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Just Launched", category: "Sorting Stations", kpis: ["New station", "3 workers", "2026"], raised: 800, goal: 4000, image_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=70", since_year: "2026", description: "A brand-new sorting station at Mawun beach, operated by the Eco Mawun team.", created_at: "" },
   { id: "3", slug: "awang", name: "Awang Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Beach cleanup May 6", "Sea waste", "Boats"], raised: 400, goal: 4500, image_url: "https://images.unsplash.com/photo-1473625247510-8ceb1760943f?w=800&q=70", since_year: "2026", description: "Kicking off May 6, 2026 with a major beach cleanup, followed by setup of a sorting station in Awang.", created_at: "" },
   { id: "4", slug: "gili-gede", name: "Gili Gede Station", partner_slug: "gps-ggi", location: "West Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Island station", "Sea collection", "Early May"], raised: 600, goal: 5500, image_url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=70", since_year: "2026", description: "An island-based sorting station on Gili Gede, operated by GPS_ggi in partnership with Marina Del Ray.", created_at: "" },
@@ -79,7 +79,7 @@ export async function generateStaticParams() {
   try {
     const supabase = createServerClient();
     const { data } = await supabase.from("projects").select("slug");
-    return (data ?? []).map((p) => ({ slug: p.slug }));
+    return (data ?? []).map((p: { slug: string }) => ({ slug: p.slug }));
   } catch {
     return FALLBACK_PROJECTS.map((p) => ({ slug: p.slug }));
   }
@@ -90,6 +90,13 @@ const STATUS_COLORS: Record<string, { bg: string; text: string }> = {
   "Just Launched": { bg: "bg-amber-100", text: "text-amber-800" },
   "Launching May": { bg: "bg-amber-100", text: "text-amber-800" },
 };
+
+// KPI tile background colours — cycles through 3 tints
+const KPI_TINTS = [
+  { bg: "#EDF9FB", color: "#1A7A8A" },
+  { bg: "#E8F5E9", color: "#2E7D32" },
+  { bg: "#FFF8E1", color: "#856200" },
+];
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -103,7 +110,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   const status = STATUS_COLORS[project.status] ?? STATUS_COLORS["Operational"];
 
-  // Aggregate fund totals for main progress bar
   const totalRaised = funds.reduce((s, f) => s + f.raised, 0);
   const totalGoal = funds.reduce((s, f) => s + f.goal, 0);
   const hasFunds = totalGoal > 0;
@@ -117,79 +123,125 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           <a href="/">
             <Image src="/logo.png" alt="WaveNova" width={200} height={56} className="h-12 w-auto" />
           </a>
-          <a href="/#donate" className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: "#24B5CB" }}>
+          <a
+            href={`/#donate?project=${slug}`}
+            className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white"
+            style={{ background: "#24B5CB" }}
+          >
             Donate Now
           </a>
         </nav>
 
-        {/* Hero image */}
-        <div className="relative h-64 md:h-96 overflow-hidden">
+        {/* Hero — cinematic height */}
+        <div className="relative h-[60vh] md:h-[70vh] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={project.image_url} alt={project.name} className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          <div className="absolute bottom-6 left-6 right-6">
-            <span className={`text-xs px-3 py-1.5 rounded-full font-semibold inline-block mb-2 ${status.bg} ${status.text}`}>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute bottom-8 left-6 right-6 md:left-10 md:right-10">
+            <span className={`text-xs px-3 py-1.5 rounded-full font-semibold inline-block mb-3 ${status.bg} ${status.text}`}>
               {project.status}
             </span>
-            <h1 className="font-[var(--font-dm-serif)] text-3xl md:text-4xl text-white">{project.name}</h1>
-            <div className="flex items-center gap-1.5 text-white/80 text-sm mt-1">
+            <h1 className="font-[var(--font-dm-serif)] text-4xl md:text-5xl text-white leading-tight">
+              {project.name}
+            </h1>
+            <div className="flex items-center gap-2 text-white/80 text-sm mt-2">
               <MapPin size={14} />
               <span>{project.location}{partner ? ` · ${partner.name}` : ""}</span>
             </div>
           </div>
         </div>
 
+        {/* KPI strip */}
+        {project.kpis.length > 0 && (
+          <div className="bg-white border-b border-[#E5E7EB]">
+            <div className="max-w-5xl mx-auto px-6 py-4">
+              <div className="flex gap-3 overflow-x-auto no-scrollbar">
+                {project.kpis.map((kpi, i) => {
+                  const tint = KPI_TINTS[i % KPI_TINTS.length];
+                  return (
+                    <span
+                      key={kpi}
+                      className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold"
+                      style={{ background: tint.bg, color: tint.color }}
+                    >
+                      {kpi}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Body */}
         <div className="max-w-5xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Main content */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:items-start">
+
+            {/* Left — main content */}
             <div className="md:col-span-2 space-y-8">
+
               {/* About */}
-              <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                <h2 className="font-bold text-xl text-[#1F2937] mb-3">About This Project</h2>
-                <p className="text-[#4B5563] leading-relaxed">
+              <div className="bg-white rounded-2xl p-8 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+                <h2 className="font-bold text-xl text-[#1F2937] mb-4">About This Project</h2>
+                <p className="text-[#4B5563] leading-relaxed text-base">
                   {project.description ?? "This project is part of WaveNova's curated portfolio of grassroots environmental initiatives in South Lombok, Indonesia."}
                 </p>
                 {project.since_year && (
-                  <p className="text-[#9CA3AF] text-sm mt-3">Operating since {project.since_year}</p>
+                  <p className="text-[#9CA3AF] text-sm mt-4">Operating since {project.since_year}</p>
                 )}
               </div>
 
-              {/* Latest Updates */}
+              {/* Activity timeline */}
               {activities.length > 0 && (
-                <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                  <h2 className="font-bold text-xl text-[#1F2937] mb-4">Latest Updates</h2>
-                  <div className="space-y-4">
-                    {activities.map((a) => (
-                      <div key={a.id} className="flex items-start gap-3">
-                        <div className="w-2 h-2 rounded-full mt-2 flex-shrink-0" style={{ background: "#24B5CB" }} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[#1F2937] text-sm leading-snug">{a.action_text}</p>
-                          <p className="text-[#9CA3AF] text-xs mt-0.5">{timeAgo(a.created_at)}</p>
+                <div className="bg-white rounded-2xl p-8 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+                  <h2 className="font-bold text-xl text-[#1F2937] mb-6">Station Updates</h2>
+                  <div className="relative pl-5">
+                    {/* Vertical line */}
+                    <div
+                      className="absolute left-[7px] top-1 bottom-1 w-0.5 rounded-full"
+                      style={{ background: "#E5E7EB" }}
+                    />
+                    <div className="space-y-6">
+                      {activities.map((a) => (
+                        <div key={a.id} className="relative flex items-start gap-4">
+                          {/* Dot */}
+                          <div
+                            className="absolute -left-[18px] mt-1.5 w-3.5 h-3.5 rounded-full border-2 border-white flex-shrink-0"
+                            style={{ background: "#24B5CB" }}
+                          />
+                          <div className="min-w-0">
+                            <p className="text-[#1F2937] text-sm leading-snug">{a.action_text}</p>
+                            <p className="text-[#9CA3AF] text-xs mt-1">{timeAgo(a.created_at)}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-5">
-              {/* Fundraising progress */}
+            {/* Right — sticky sidebar */}
+            <div className="space-y-5 md:sticky md:top-6">
+
+              {/* Fundraising / donate card */}
               <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
                 {hasFunds ? (
                   <>
-                    <div className="font-[var(--font-dm-serif)] text-3xl mb-1" style={{ color: "#24B5CB" }}>
+                    <div className="font-[var(--font-dm-serif)] text-4xl mb-1" style={{ color: "#24B5CB" }}>
                       ${totalRaised.toLocaleString()}
                     </div>
                     <p className="text-[#6B7280] text-sm mb-3">raised of ${totalGoal.toLocaleString()} goal</p>
-                    <div className="h-2 rounded-full bg-[#E5E7EB] mb-3">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#24B5CB" }} />
+                    <div className="h-2.5 rounded-full bg-[#E5E7EB] mb-2">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${pct}%`, background: "#24B5CB" }}
+                      />
                     </div>
-                    <p className="text-[#6B7280] text-xs mb-5">{pct}% funded</p>
+                    <p className="text-[#6B7280] text-xs mb-6">{pct}% funded</p>
                   </>
                 ) : (
-                  <p className="text-[#9CA3AF] text-sm mb-5">Fundraising coming soon.</p>
+                  <p className="text-[#9CA3AF] text-sm mb-6">Fundraising coming soon.</p>
                 )}
                 <a
                   href={`/#donate?project=${slug}`}
@@ -206,11 +258,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </p>
               </div>
 
-              {/* Active Funds */}
+              {/* Active Funds breakdown */}
               {funds.length > 0 && (
                 <div className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
                   <h3 className="font-semibold text-sm text-[#1F2937] mb-4">Active Funds</h3>
-                  <div className="space-y-4">
+                  <div className="space-y-5">
                     {funds.map((f) => {
                       const fpct = f.goal > 0 ? Math.min(Math.round((f.raised / f.goal) * 100), 100) : 0;
                       return (
@@ -218,16 +270,26 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                           <div className="flex items-start justify-between gap-2 mb-1">
                             <p className="font-medium text-sm text-[#1F2937]">{f.name}</p>
                             {f.status === "completed" && (
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold whitespace-nowrap">Completed</span>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold whitespace-nowrap">
+                                Completed
+                              </span>
                             )}
                           </div>
-                          {f.description && <p className="text-xs text-[#6B7280] mb-1.5">{f.description}</p>}
+                          {f.description && (
+                            <p className="text-xs text-[#6B7280] mb-1.5">{f.description}</p>
+                          )}
                           <div className="flex justify-between text-xs text-[#9CA3AF] mb-1">
                             <span>${f.raised.toLocaleString()} raised</span>
                             <span>${f.goal.toLocaleString()} goal · {fpct}%</span>
                           </div>
                           <div className="h-1.5 rounded-full bg-[#E5E7EB]">
-                            <div className="h-full rounded-full" style={{ width: `${fpct}%`, background: f.status === "completed" ? "#059669" : "#24B5CB" }} />
+                            <div
+                              className="h-full rounded-full"
+                              style={{
+                                width: `${fpct}%`,
+                                background: f.status === "completed" ? "#059669" : "#24B5CB",
+                              }}
+                            />
                           </div>
                         </div>
                       );
@@ -239,7 +301,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
               {/* Project details */}
               <div className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
                 <h3 className="font-semibold text-sm text-[#1F2937] mb-3">Project Details</h3>
-                <dl className="space-y-2 text-sm">
+                <dl className="space-y-2.5 text-sm">
                   <div className="flex justify-between">
                     <dt className="text-[#6B7280]">Partner</dt>
                     <dd className="font-medium text-[#1F2937]">{partner?.name ?? project.partner_slug}</dd>
@@ -261,7 +323,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 </dl>
               </div>
 
-              <a href="/#projects" className="block text-center text-sm font-medium hover:underline" style={{ color: "#24B5CB" }}>
+              <a
+                href="/#projects"
+                className="block text-center text-sm font-medium hover:underline"
+                style={{ color: "#24B5CB" }}
+              >
                 ← All Projects
               </a>
             </div>
