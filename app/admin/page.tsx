@@ -48,15 +48,29 @@ const DONATION_STATUS_COLORS: Record<string, { bg: string; text: string }> = {
 
 function DonationsTab({ token }: { token: string }) {
   const [donations, setDonations] = useState<Donation[]>([]);
+  const [fundsByProject, setFundsByProject] = useState<Record<string, Fund[]>>({});
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [allocating, setAllocating] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const api = authFetch(token);
 
   useEffect(() => {
-    api("/api/admin/donations")
-      .then((r) => r.json())
-      .then(({ donations: d }) => { setDonations(d ?? []); setLoading(false); })
+    Promise.all([
+      api("/api/admin/donations").then((r) => r.json()),
+      api("/api/admin/funds").then((r) => r.json()),
+    ])
+      .then(([{ donations: d }, { funds: f }]) => {
+        setDonations(d ?? []);
+        const grouped: Record<string, Fund[]> = {};
+        for (const fund of (f ?? []) as Fund[]) {
+          if (!grouped[fund.project_slug]) grouped[fund.project_slug] = [];
+          grouped[fund.project_slug].push(fund);
+        }
+        setFundsByProject(grouped);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
@@ -71,6 +85,22 @@ function DonationsTab({ token }: { token: string }) {
       setDonations((prev) => prev.map((d) => d.id === id ? { ...d, status: "confirmed" as const } : d));
     } else {
       setError(data.error ?? "Failed to confirm");
+    }
+  };
+
+  const allocateFund = async (donationId: string, fundId: string | null) => {
+    setAllocating(donationId);
+    const res = await api(`/api/partner/donations/${donationId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ fund_id: fundId }),
+    });
+    setAllocating(null);
+    if (res.ok) {
+      setDonations((prev) => prev.map((d) => d.id === donationId ? { ...d, fund_id: fundId } : d));
+      setSavedId(donationId);
+      setTimeout(() => setSavedId(null), 2000);
+    } else {
+      setError("Failed to allocate fund");
     }
   };
 
@@ -92,12 +122,14 @@ function DonationsTab({ token }: { token: string }) {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] hidden md:table-cell">Project</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280] hidden lg:table-cell">Ref</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280]">Status</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#6B7280]">Allocate to Fund</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
               {donations.map((d, i) => {
                 const s = DONATION_STATUS_COLORS[d.status] ?? DONATION_STATUS_COLORS["pending"];
+                const projectFunds = fundsByProject[d.project_slug] ?? [];
                 return (
                   <tr key={d.id} className={`border-b border-[#E5E7EB] last:border-0 ${i % 2 === 1 ? "bg-[#F9FAFB]" : ""}`}>
                     <td className="px-4 py-3 text-[#6B7280] whitespace-nowrap">{new Date(d.created_at).toLocaleDateString()}</td>
@@ -112,6 +144,33 @@ function DonationsTab({ token }: { token: string }) {
                       <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${s.bg} ${s.text}`}>
                         {d.status.charAt(0).toUpperCase() + d.status.slice(1)}
                       </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      {d.status === "pending" ? (
+                        <span className="text-xs text-[#9CA3AF]">Confirm first</span>
+                      ) : projectFunds.length === 0 ? (
+                        <span className="text-xs text-[#9CA3AF]">No funds</span>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={d.fund_id ?? ""}
+                            disabled={allocating === d.id}
+                            onChange={(e) => allocateFund(d.id, e.target.value || null)}
+                            className="text-xs border border-[#D1D5DB] rounded-lg px-2 py-1.5 focus:outline-none focus:border-[#24B5CB] disabled:opacity-60 max-w-[160px]"
+                          >
+                            <option value="">— Unallocated —</option>
+                            {projectFunds.map((f) => (
+                              <option key={f.id} value={f.id}>{f.name}</option>
+                            ))}
+                          </select>
+                          {savedId === d.id && (
+                            <span className="text-xs text-emerald-600 font-medium whitespace-nowrap">Saved ✓</span>
+                          )}
+                          {allocating === d.id && (
+                            <span className="text-xs text-[#9CA3AF]">…</span>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-right">
                       {d.status === "pending" && (

@@ -51,6 +51,7 @@ create table if not exists donations (
   tip_amount numeric(10,2) not null default 0,
   donor_name text,
   donor_email text not null,
+  fund_id uuid references funds(id) on delete set null,
   created_at timestamptz default now()
 );
 
