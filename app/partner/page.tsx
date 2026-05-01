@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import ImageUpload from "@/app/components/ImageUpload";
-import type { Project } from "@/lib/database.types";
+import type { Project, Fund } from "@/lib/database.types";
+
+type FundTotals = Record<string, { raised: number; goal: number }>;
 
 const PROJECT_CATEGORY_OPTIONS = ["Sorting Stations", "Waste Management"];
 
@@ -31,6 +33,7 @@ export default function PartnerPage() {
   const [token, setToken] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState("");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [fundTotals, setFundTotals] = useState<FundTotals>({});
   const [loading, setLoading] = useState(true);
   const [noPartner, setNoPartner] = useState(false);
 
@@ -53,13 +56,26 @@ export default function PartnerPage() {
 
       const res = await fetch("/api/partner/projects", { headers: { Authorization: `Bearer ${session.access_token}` } });
       const data = await res.json();
-      if (data.projects?.length === 0 && !data.error) {
-        // partner logged in but no projects yet — that's fine
-      }
       if (data.error === "No partner assigned") {
         setNoPartner(true);
       } else {
-        setProjects(data.projects ?? []);
+        const loadedProjects: Project[] = data.projects ?? [];
+        setProjects(loadedProjects);
+        if (loadedProjects.length > 0) {
+          const slugs = loadedProjects.map((p) => p.slug);
+          const { data: fundsData } = await supabase
+            .from("funds")
+            .select("project_slug, raised, goal")
+            .eq("status", "active")
+            .in("project_slug", slugs);
+          const totals: FundTotals = {};
+          for (const f of (fundsData ?? []) as Pick<Fund, "project_slug" | "raised" | "goal">[]) {
+            if (!totals[f.project_slug]) totals[f.project_slug] = { raised: 0, goal: 0 };
+            totals[f.project_slug].raised += f.raised;
+            totals[f.project_slug].goal += f.goal;
+          }
+          setFundTotals(totals);
+        }
       }
       setLoading(false);
     });
@@ -79,10 +95,24 @@ export default function PartnerPage() {
     if (data.success) {
       setNewForm({ slug: "", name: "", location: "", category: "Sorting Stations", image_url: "", description: "", since_year: "" });
       setShowNew(false);
-      // refresh list
       const updated = await fetch("/api/partner/projects", { headers: { Authorization: `Bearer ${token}` } });
       const ud = await updated.json();
-      setProjects(ud.projects ?? []);
+      const refreshed: Project[] = ud.projects ?? [];
+      setProjects(refreshed);
+      if (refreshed.length > 0) {
+        const { data: fundsData } = await supabase
+          .from("funds")
+          .select("project_slug, raised, goal")
+          .eq("status", "active")
+          .in("project_slug", refreshed.map((p) => p.slug));
+        const totals: FundTotals = {};
+        for (const f of (fundsData ?? []) as Pick<Fund, "project_slug" | "raised" | "goal">[]) {
+          if (!totals[f.project_slug]) totals[f.project_slug] = { raised: 0, goal: 0 };
+          totals[f.project_slug].raised += f.raised;
+          totals[f.project_slug].goal += f.goal;
+        }
+        setFundTotals(totals);
+      }
     } else { setCreateError(data.error ?? "Failed to create"); }
   };
 
@@ -196,25 +226,36 @@ export default function PartnerPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {projects.map((p) => (
-                  <a key={p.slug} href={`/partner/projects/${p.slug}`}
-                    className="block bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-shadow">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-semibold text-[#1F2937]">{p.name}</h3>
-                          <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${STATUS_COLORS[p.status] ?? "bg-gray-50 text-gray-600"}`}>{p.status}</span>
+                {projects.map((p) => {
+                  const totals = fundTotals[p.slug];
+                  const hasFunds = totals && totals.goal > 0;
+                  const pct = hasFunds ? Math.min(100, Math.round((totals.raised / totals.goal) * 100)) : 0;
+                  return (
+                    <a key={p.slug} href={`/partner/projects/${p.slug}`}
+                      className="block bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-shadow">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-semibold text-[#1F2937]">{p.name}</h3>
+                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${STATUS_COLORS[p.status] ?? "bg-gray-50 text-gray-600"}`}>{p.status}</span>
+                          </div>
+                          <p className="text-sm text-[#6B7280] mt-0.5">{p.location} · {p.category}</p>
+                          {hasFunds ? (
+                            <>
+                              <div className="mt-2 h-1.5 rounded-full bg-[#E5E7EB]">
+                                <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#24B5CB" }} />
+                              </div>
+                              <p className="text-xs text-[#9CA3AF] mt-1">${totals.raised.toLocaleString()} / ${totals.goal.toLocaleString()} across all funds</p>
+                            </>
+                          ) : (
+                            <p className="text-xs text-[#9CA3AF] mt-2">No active funds yet</p>
+                          )}
                         </div>
-                        <p className="text-sm text-[#6B7280] mt-0.5">{p.location} · {p.category}</p>
-                        <div className="mt-2 h-1.5 rounded-full bg-[#E5E7EB]">
-                          <div className="h-full rounded-full" style={{ width: `${Math.min(100, (p.raised / p.goal) * 100)}%`, background: "#24B5CB" }} />
-                        </div>
-                        <p className="text-xs text-[#9CA3AF] mt-1">${p.raised.toLocaleString()} / ${p.goal.toLocaleString()}</p>
+                        <span className="text-sm font-medium shrink-0" style={{ color: "#24B5CB" }}>Manage →</span>
                       </div>
-                      <span className="text-sm font-medium shrink-0" style={{ color: "#24B5CB" }}>Manage →</span>
-                    </div>
-                  </a>
-                ))}
+                    </a>
+                  );
+                })}
               </div>
             )}
           </>

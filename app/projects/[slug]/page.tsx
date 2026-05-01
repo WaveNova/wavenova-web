@@ -154,40 +154,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 )}
               </div>
 
-              {/* KPIs */}
-              <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                <h2 className="font-bold text-xl text-[#1F2937] mb-4">Impact Metrics</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {project.kpis.map((kpi) => (
-                    <div key={kpi} className="rounded-xl p-4 text-center" style={{ background: "#EDF9FB" }}>
-                      <p className="font-semibold text-sm" style={{ color: "#1A7A8A" }}>{kpi}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* How funds are used */}
-              <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                <h2 className="font-bold text-xl text-[#1F2937] mb-4">How Funds Are Used</h2>
-                <div className="space-y-3">
-                  {[
-                    { label: "Direct to local operations (workers, waste purchases, logistics)", pct: 87, color: "#059669" },
-                    { label: "WaveNova management (content, reporting, admin)", pct: 10, color: "#24B5CB" },
-                    { label: "Payment processing", pct: 3, color: "#9CA3AF" },
-                  ].map((item) => (
-                    <div key={item.label}>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span className="text-[#4B5563]">{item.label}</span>
-                        <span className="font-semibold" style={{ color: item.color }}>{item.pct}%</span>
-                      </div>
-                      <div className="h-2 rounded-full bg-[#E5E7EB]">
-                        <div className="h-full rounded-full" style={{ width: `${item.pct}%`, background: item.color }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
               {/* Latest Updates */}
               {activities.length > 0 && (
                 <div className="bg-white rounded-2xl p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
@@ -235,13 +201,15 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                 <p className="text-[#9CA3AF] text-xs text-center mt-3">
                   100% traceable · Bank transfer · WaveNova Yayasan
                 </p>
+                <p className="text-[#9CA3AF] text-xs text-center mt-1">
+                  Majority goes direct to local operations
+                </p>
               </div>
 
               {/* Active Funds */}
               {funds.length > 0 && (
                 <div className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-                  <h3 className="font-semibold text-sm text-[#1F2937] mb-1">Where your donation goes</h3>
-                  <p className="text-xs text-[#9CA3AF] mb-4">Active funds for this project</p>
+                  <h3 className="font-semibold text-sm text-[#1F2937] mb-4">Active Funds</h3>
                   <div className="space-y-4">
                     {funds.map((f) => {
                       const fpct = f.goal > 0 ? Math.min(Math.round((f.raised / f.goal) * 100), 100) : 0;
