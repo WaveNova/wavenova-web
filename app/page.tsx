@@ -13,7 +13,7 @@ export default function Home() {
       <Hero totalKg={47823} />
       <ProjectGrid projects={[]} />
       <HowItWorks />
-      <ImpactDashboard metrics={null} activities={[]} />
+      <ImpactDashboard metrics={null} />
       <DonationSection id="donate" projects={[]} />
       <Footer />
     </main>

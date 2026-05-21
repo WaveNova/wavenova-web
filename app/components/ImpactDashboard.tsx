@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import type { Metrics, Activity } from "@/lib/database.types";
+import type { Metrics } from "@/lib/database.types";
 
 const ALLOCATION = [
   { label: "Project Operations", pct: 87, color: "#059669" },
@@ -52,44 +52,23 @@ function DonutChart() {
 
 interface Props {
   metrics: Metrics | null;
-  activities: Activity[];
 }
 
-export default function ImpactDashboard({ metrics, activities }: Props) {
+export default function ImpactDashboard({ metrics }: Props) {
   const [liveMetrics, setLiveMetrics] = useState<Metrics | null>(metrics);
-  const [liveActivities, setLiveActivities] = useState<Activity[]>(activities);
 
   useEffect(() => {
     supabase.from("metrics").select("*").limit(1).maybeSingle()
       .then(({ data }) => { if (data) setLiveMetrics(data); });
-    supabase.from("activities").select("*").order("created_at", { ascending: false }).limit(8)
-      .then(({ data }) => { if (data && data.length > 0) setLiveActivities(data); });
   }, []);
 
   const m = liveMetrics ?? { total_kg: 47823, active_stations: 5, workers_employed: 18, households_served: 340 };
-  const feed = liveActivities.length > 0 ? liveActivities : [
-    { id: "1", station_name: "Selong Belanak", action_text: "purchased 420 KG this week", created_at: "" },
-    { id: "2", station_name: "Honest Impact", action_text: "river barrier intercepted 180 KG", created_at: "" },
-    { id: "3", station_name: "Mawun", action_text: "first station collection — 95 KG", created_at: "" },
-    { id: "4", station_name: "SBCA upgrade", action_text: "facility upgrade 60% funded", created_at: "" },
-  ];
 
   const KPI_CARDS = [
     { label: "Total KG Removed", value: m.total_kg.toLocaleString(), icon: "♻️" },
     { label: "Active Stations", value: String(m.active_stations), icon: "📍" },
     { label: "Workers Employed", value: String(m.workers_employed), icon: "👷" },
   ];
-
-  const initials = (name: string) => name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-
-  const timeAgo = (iso: string) => {
-    if (!iso) return "Recently";
-    const diff = Date.now() - new Date(iso).getTime();
-    const days = Math.floor(diff / 86400000);
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    return `${days} days ago`;
-  };
 
   return (
     <section id="dashboard" className="py-20" style={{ background: "#1A7A8A" }}>
@@ -110,41 +89,25 @@ export default function ImpactDashboard({ metrics, activities }: Props) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl p-5 flex flex-col justify-between min-h-[220px]" style={{ background: "rgba(255,255,255,0.08)" }}>
-            <h4 className="text-white font-semibold mb-3 text-sm">South Lombok Network</h4>
-            <div className="flex-1 flex items-center justify-center">
-              <div className="text-center text-white/40 text-sm">
-                <div className="text-4xl mb-2">🗺️</div>
-                <p>Interactive map</p>
-                <p className="text-xs mt-1">5 stations across South Lombok</p>
-              </div>
+          {/* Map — spans 2 cols */}
+          <div className="md:col-span-2 rounded-2xl overflow-hidden min-h-[260px] relative" style={{ background: "rgba(255,255,255,0.08)" }}>
+            <div className="absolute top-3 left-3 z-10 px-3 py-1.5 rounded-lg text-xs font-semibold text-white" style={{ background: "rgba(26,122,138,0.85)" }}>
+              South Lombok Network
             </div>
-            <div className="flex flex-wrap gap-2 mt-3">
+            <iframe
+              src="https://www.openstreetmap.org/export/embed.html?bbox=115.85%2C-9.05%2C116.45%2C-8.60&layer=mapnik"
+              className="w-full h-full min-h-[260px] border-0"
+              title="South Lombok station map"
+              loading="lazy"
+            />
+            <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
               {["Selong Belanak", "Mawun", "Awang", "Gili Gede", "Kuta"].map((s) => (
-                <span key={s} className="text-xs px-2 py-0.5 rounded-full" style={{ background: "rgba(36,181,203,0.25)", color: "#3CC5D9" }}>{s}</span>
+                <span key={s} className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: "rgba(26,122,138,0.85)", color: "#fff" }}>{s}</span>
               ))}
             </div>
           </div>
 
-          <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.08)" }}>
-            <h4 className="text-white font-semibold mb-4 text-sm">Recent Activity</h4>
-            <div className="space-y-3">
-              {feed.map((item) => (
-                <div key={item.id} className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold" style={{ background: "#24B5CB", color: "#fff" }}>
-                    {initials(item.station_name)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white/90 text-xs leading-snug">
-                      <strong>{item.station_name}</strong> {item.action_text}
-                    </p>
-                    <p className="text-white/40 text-xs mt-0.5">{timeAgo(item.created_at)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
+          {/* Fund Allocation */}
           <div className="rounded-2xl p-5 flex flex-col items-center" style={{ background: "rgba(255,255,255,0.08)" }}>
             <h4 className="text-white font-semibold mb-4 text-sm self-start">Fund Allocation</h4>
             <DonutChart />
