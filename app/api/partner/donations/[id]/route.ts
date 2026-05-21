@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getCallerAuth } from "@/lib/auth-helpers";
 import { createServerClient } from "@/lib/supabase-server";
 
@@ -49,5 +50,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { error } = await supabase.from("donations").update({ fund_id: fund_id ?? null }).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  revalidatePath(`/projects/${donation.project_slug}`);
   return NextResponse.json({ success: true });
 }

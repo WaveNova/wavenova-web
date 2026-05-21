@@ -133,7 +133,7 @@ export default function PartnerPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       <nav className="bg-white border-b border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <a href="/"><Image src="/logo.png" alt="WaveNova" width={120} height={36} className="h-8 w-auto" /></a>
+          <a href="/"><Image src="/logo.png" alt="WaveNova" width={200} height={56} className="h-12 w-auto" /></a>
           <span className="text-sm font-semibold text-[#6B7280]">/ Partner Portal</span>
         </div>
         <div className="flex items-center gap-4">

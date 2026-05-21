@@ -78,7 +78,6 @@ export default function ImpactDashboard({ metrics, activities }: Props) {
     { label: "Total KG Removed", value: m.total_kg.toLocaleString(), icon: "♻️" },
     { label: "Active Stations", value: String(m.active_stations), icon: "📍" },
     { label: "Workers Employed", value: String(m.workers_employed), icon: "👷" },
-    { label: "Households Served", value: String(m.households_served), icon: "🏠" },
   ];
 
   const initials = (name: string) => name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
@@ -100,7 +99,7 @@ export default function ImpactDashboard({ metrics, activities }: Props) {
           <p className="text-white/70 text-lg">Every dollar is project-tagged and publicly reported.</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           {KPI_CARDS.map((card) => (
             <div key={card.label} className="rounded-2xl p-5 text-center" style={{ background: "rgba(255,255,255,0.08)" }}>
               <div className="text-3xl mb-2">{card.icon}</div>

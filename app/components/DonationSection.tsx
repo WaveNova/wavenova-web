@@ -88,6 +88,8 @@ function SuccessScreen({ result, amount, onReset }: { result: DonationResult; am
         </div>
         {[
           { label: "Bank", value: result.bankName },
+          { label: "Bank Code", value: "028" },
+          { label: "Branch Code", value: "07160" },
           { label: "Account Number", value: result.bankAccount },
           { label: "Account Holder", value: result.bankHolder },
           { label: "Swift Code", value: result.bankSwift },
@@ -206,7 +208,7 @@ function SignInGate({ sectionId }: { sectionId: string }) {
   );
 }
 
-export default function DonationSection({ id, projects }: { id?: string; projects: Project[] }) {
+export default function DonationSection({ id, projects, defaultProjectSlug }: { id?: string; projects: Project[]; defaultProjectSlug?: string }) {
   const sectionId = id ?? "donate";
 
   const [authState, setAuthState] = useState<AuthState>("loading");
@@ -215,7 +217,7 @@ export default function DonationSection({ id, projects }: { id?: string; project
   const [amount, setAmount] = useState(25);
   const [custom, setCustom] = useState("");
   const [frequency, setFrequency] = useState<Frequency>("one-time");
-  const [projectSlug, setProjectSlug] = useState("general");
+  const [projectSlug, setProjectSlug] = useState(defaultProjectSlug ?? "general");
   const [tip, setTip] = useState(false);
   const [donorName, setDonorName] = useState("");
   const [loading, setLoading] = useState(false);

@@ -4,6 +4,7 @@ import type { Project, Fund, Partner, Activity } from "@/lib/database.types";
 import Image from "next/image";
 import { MapPin } from "lucide-react";
 import Footer from "@/app/components/Footer";
+import DonationSection from "@/app/components/DonationSection";
 
 export const revalidate = 60;
 
@@ -124,7 +125,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <Image src="/logo.png" alt="WaveNova" width={200} height={56} className="h-12 w-auto" />
           </a>
           <a
-            href={`/#donate?project=${slug}`}
+            href="#donate"
             className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white"
             style={{ background: "#24B5CB" }}
           >
@@ -244,7 +245,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                   <p className="text-[#9CA3AF] text-sm mb-6">Fundraising coming soon.</p>
                 )}
                 <a
-                  href={`/#donate?project=${slug}`}
+                  href="#donate"
                   className="block w-full text-center py-3.5 rounded-xl text-white font-semibold text-sm"
                   style={{ background: "#24B5CB" }}
                 >
@@ -334,6 +335,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           </div>
         </div>
       </main>
+      <DonationSection id="donate" projects={[project]} defaultProjectSlug={slug} />
       <Footer />
     </>
   );

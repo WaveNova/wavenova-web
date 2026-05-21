@@ -6,16 +6,11 @@ import { ExternalLink, Mail } from "lucide-react";
 const QUICK_LINKS = [
   { label: "Projects", href: "#projects" },
   { label: "Dashboard", href: "/dashboard" },
-  { label: "Stories", href: "/stories" },
   { label: "About", href: "/about" },
-  { label: "Contact", href: "mailto:hi@wavenova.org" },
 ];
 
 const FOR_DONORS = [
-  { label: "How It Works", href: "#how-it-works" },
-  { label: "FAQ", href: "#faq" },
   { label: "Transparency", href: "/dashboard" },
-  { label: "Privacy Policy", href: "/privacy" },
 ];
 
 export default function Footer() {
@@ -28,9 +23,9 @@ export default function Footer() {
             <Image
               src="/logo.png"
               alt="WaveNova"
-              width={140}
-              height={42}
-              className="mb-4 brightness-0 invert h-9 w-auto"
+              width={200}
+              height={56}
+              className="mb-4 brightness-0 invert h-12 w-auto"
             />
             <p className="text-white/70 text-sm leading-relaxed mb-3">
               A curated portfolio of grassroots environmental projects in Lombok, Indonesia.
@@ -77,36 +72,39 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-sm">Stay Connected</h4>
             <a
-              href="https://instagram.com/wavenova"
+              href="https://instagram.com/wavenova.ocean"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm mb-3"
             >
               <ExternalLink size={16} />
-              @wavenova
+              @wavenova.ocean (Instagram)
+            </a>
+            <a
+              href="https://www.threads.net/@wavenova.ocean"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm mb-3"
+            >
+              <ExternalLink size={16} />
+              @wavenova.ocean (Threads)
+            </a>
+            <a
+              href="https://x.com/WaveNovaOcean"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm mb-3"
+            >
+              <ExternalLink size={16} />
+              @WaveNovaOcean (X)
             </a>
             <a
               href="mailto:hi@wavenova.org"
-              className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm mb-6"
+              className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm"
             >
               <Mail size={16} />
               hi@wavenova.org
             </a>
-
-            <p className="text-white/50 text-xs mb-2">Monthly impact updates</p>
-            <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="your@email.com"
-                className="flex-1 px-3 py-2 rounded-lg text-xs bg-white/10 border border-white/20 placeholder-white/40 focus:outline-none focus:border-white/50 text-white"
-              />
-              <button
-                type="submit"
-                className="px-3 py-2 rounded-lg text-xs font-semibold border border-white/50 hover:bg-white/10 transition-colors"
-              >
-                Join
-              </button>
-            </form>
           </div>
         </div>
 
