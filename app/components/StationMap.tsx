@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
-const STATIONS = [
+interface Station { name: string; lat: number; lng: number; partner: string }
+
+const FALLBACK_STATIONS: Station[] = [
   { name: "Selong Belanak", lat: -8.889, lng: 116.228, partner: "SBCA" },
   { name: "Mawun", lat: -8.912, lng: 116.182, partner: "Eco Mawun" },
   { name: "Awang", lat: -8.937, lng: 116.295, partner: "Eco Mawun" },
@@ -13,9 +16,25 @@ const STATIONS = [
 export default function StationMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
+  const [stations, setStations] = useState<Station[]>([]);
 
   useEffect(() => {
-    if (initialized.current || !mapRef.current) return;
+    supabase
+      .from("projects")
+      .select("name, partner_slug, lat, lng")
+      .not("lat", "is", null)
+      .not("lng", "is", null)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setStations(data.map((p) => ({ name: p.name, lat: p.lat, lng: p.lng, partner: p.partner_slug })));
+        } else {
+          setStations(FALLBACK_STATIONS);
+        }
+      });
+  }, []);
+
+  useEffect(() => {
+    if (stations.length === 0 || initialized.current || !mapRef.current) return;
     initialized.current = true;
 
     const link = document.createElement("link");
@@ -40,14 +59,14 @@ export default function StationMap() {
       const pinHtml = `<div style="background:#24B5CB;width:14px;height:14px;border-radius:50%;border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`;
       const icon = L.divIcon({ html: pinHtml, className: "", iconSize: [14, 14], iconAnchor: [7, 7], popupAnchor: [0, -10] });
 
-      STATIONS.forEach(({ name, lat, lng, partner }) => {
+      stations.forEach(({ name, lat, lng, partner }) => {
         L.marker([lat, lng], { icon })
           .addTo(map)
           .bindPopup(`<strong style="color:#1A7A8A">${name}</strong><br><span style="font-size:12px;color:#6B7280">${partner}</span>`);
       });
     };
     document.head.appendChild(script);
-  }, []);
+  }, [stations]);
 
   return <div ref={mapRef} className="w-full h-full" style={{ minHeight: 300 }} />;
 }

@@ -26,6 +26,8 @@ export interface Project {
   image_url: string;
   since_year: string | null;
   description: string | null;
+  lat: number | null;
+  lng: number | null;
   created_at: string;
 }
 

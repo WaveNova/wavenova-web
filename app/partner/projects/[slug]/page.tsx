@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import ImageUpload from "@/app/components/ImageUpload";
+import LocationPicker from "@/app/components/LocationPicker";
 import type { Project, Activity, Fund, Donation } from "@/lib/database.types";
 
 function timeAgo(iso: string) {
@@ -63,6 +64,8 @@ export default function PartnerProjectPage() {
   const [editDesc, setEditDesc] = useState("");
   const [editKpis, setEditKpis] = useState<string[]>([]);
   const [editImage, setEditImage] = useState("");
+  const [editLat, setEditLat] = useState<number | null>(null);
+  const [editLng, setEditLng] = useState<number | null>(null);
   const [savingProject, setSavingProject] = useState(false);
   const [saveProjectSuccess, setSaveProjectSuccess] = useState(false);
   const [saveProjectError, setSaveProjectError] = useState("");
@@ -107,6 +110,8 @@ export default function PartnerProjectPage() {
       setEditDesc(projData.project?.description ?? "");
       setEditKpis(projData.project?.kpis ?? []);
       setEditImage(projData.project?.image_url ?? "");
+      setEditLat(projData.project?.lat ?? null);
+      setEditLng(projData.project?.lng ?? null);
 
       const fs = fundsData.funds ?? [];
       setFunds(fs);
@@ -145,7 +150,7 @@ export default function PartnerProjectPage() {
     const res = await fetch(`/api/partner/projects/${slug}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ description: editDesc, kpis: editKpis, image_url: editImage }),
+      body: JSON.stringify({ description: editDesc, kpis: editKpis, image_url: editImage, lat: editLat, lng: editLng }),
     });
     const data = await res.json();
     setSavingProject(false);
@@ -269,6 +274,14 @@ export default function PartnerProjectPage() {
                 </div>
                 <div>
                   <ImageUpload label="Project Image" value={editImage} onChange={setEditImage} />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#6B7280] mb-1">Station Location</label>
+                  <LocationPicker
+                    defaultLat={editLat}
+                    defaultLng={editLng}
+                    onChange={({ lat, lng }) => { setEditLat(lat); setEditLng(lng); }}
+                  />
                 </div>
                 {saveProjectError && <p className="text-red-600 text-sm">{saveProjectError}</p>}
                 <button type="submit" disabled={savingProject}

@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ sl
   const body = await req.json();
   const allowed = auth.role === "admin"
     ? ["name", "description", "kpis", "image_url", "goal", "status", "raised", "location", "since_year"]
-    : ["description", "kpis", "image_url", "goal"];
+    : ["description", "kpis", "image_url", "goal", "lat", "lng"];
   const update: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in body) update[key] = body[key];

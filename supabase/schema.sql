@@ -28,6 +28,8 @@ create table if not exists projects (
   image_url text not null,
   since_year text,
   description text,
+  lat double precision,
+  lng double precision,
   created_at timestamptz default now()
 );
 
