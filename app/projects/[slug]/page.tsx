@@ -120,7 +120,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     <>
       <main className="min-h-screen bg-[#F8FAFC]">
         {/* Nav */}
-        <nav className="bg-white border-b border-[#E5E7EB] px-6 py-2 flex items-center justify-between">
+        <nav className="bg-white border-b border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
           <a href="/">
             <Image src="/logo.png" alt="WaveNova" width={200} height={56} className="h-12 w-auto" />
           </a>
