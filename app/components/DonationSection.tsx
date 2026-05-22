@@ -14,13 +14,6 @@ const IMPACT_MAP: Record<number, string> = {
   100: "Supports one week of station operations",
 };
 
-const EQUIVALENCIES = [
-  { amount: "$10", what: "Removes 5 KG of plastic from Lombok's coastline" },
-  { amount: "$25", what: "Covers one worker's daily wage at a sorting station" },
-  { amount: "$50", what: "Funds a full boat cleanup trip in Awang (3 boats collecting sea waste)" },
-  { amount: "$100", what: "Supports one week of station operations including waste purchases at 2,000 IDR/kg" },
-  { amount: "Custom", what: "Every dollar is project-tagged and publicly reported on the dashboard" },
-];
 
 type Frequency = "one-time" | "monthly";
 type AuthState = "loading" | "signed-out" | "signed-in";
@@ -305,22 +298,6 @@ export default function DonationSection({ id, projects, defaultProjectSlug }: { 
     }
   };
 
-  const equivalenciesPanel = (
-    <div>
-      <h3 className="font-bold text-lg text-[#1F2937] mb-5">What Your Donation Does</h3>
-      <div className="space-y-4">
-        {EQUIVALENCIES.map((eq) => (
-          <div key={eq.amount} className="flex gap-4 items-start p-4 rounded-xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-            <div className="font-[var(--font-dm-serif)] text-2xl w-16 text-center flex-shrink-0 pt-0.5" style={{ color: "#24B5CB" }}>
-              {eq.amount}
-            </div>
-            <p className="text-[#4B5563] text-sm leading-relaxed">{eq.what}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-
   if (result) {
     return (
       <section id={sectionId} className="py-20" style={{ background: "linear-gradient(to bottom, #EDF9FB, #fff)" }}>
@@ -336,13 +313,11 @@ export default function DonationSection({ id, projects, defaultProjectSlug }: { 
           <h2 className="font-[var(--font-dm-serif)] text-4xl mb-2" style={{ color: "#1A7A8A" }}>
             Make Your Impact
           </h2>
-          <p className="text-[#6B7280] text-lg">Every dollar is project-tagged and publicly reported.</p>
+          <p className="text-[#6B7280] text-lg">$1 = 0.5 kg waste removed</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-          {equivalenciesPanel}
-
-          {/* Right panel — sign-in gate or donation form */}
+        <div className="max-w-xl mx-auto">
+          {/* Sign-in gate or donation form */}
           {authState === "loading" && (
             <div className="bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] p-7 flex items-center justify-center min-h-[200px]">
               <svg className="animate-spin h-7 w-7" viewBox="0 0 24 24" fill="none" style={{ color: "#24B5CB" }}>
