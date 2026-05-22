@@ -49,7 +49,7 @@ function SignInScreen() {
       <main className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-6">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
-            <a href="/"><Image src="/logo.png" alt="WaveNova" width={140} height={40} className="h-9 w-auto mx-auto mb-6" /></a>
+            <a href="/"><Image src="/logo.png" alt="WaveNova" width={200} height={56} className="h-12 w-auto mx-auto mb-6" /></a>
             <h1 className="font-[var(--font-dm-serif)] text-3xl mb-2" style={{ color: "#1A7A8A" }}>Track Your Impact</h1>
             <p className="text-[#6B7280]">Sign in to see your KG removed, jobs supported, and giving history.</p>
           </div>
@@ -157,7 +157,7 @@ export default function AccountPage() {
     <>
       <main className="min-h-screen bg-[#F8FAFC]">
         <nav className="bg-white border-b border-[#E5E7EB] px-6 py-4 flex items-center justify-between">
-          <a href="/"><Image src="/logo.png" alt="WaveNova" width={140} height={40} className="h-9 w-auto" /></a>
+          <a href="/"><Image src="/logo.png" alt="WaveNova" width={200} height={56} className="h-12 w-auto" /></a>
           <div className="flex items-center gap-4">
             <span className="text-sm text-[#6B7280] hidden sm:block">{user.email}</span>
             <button onClick={signOut} className="text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors">Sign out</button>
