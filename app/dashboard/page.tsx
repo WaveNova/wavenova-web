@@ -6,7 +6,7 @@ import type { Project, Metrics } from "@/lib/database.types";
 
 export const revalidate = 60;
 
-const FALLBACK_METRICS: Metrics = { id: "1", total_kg: 47823, active_stations: 5, workers_employed: 18, households_served: 340, updated_at: new Date().toISOString() };
+const FALLBACK_METRICS: Metrics = { id: "1", total_kg: 0, active_stations: 0, workers_employed: 0, households_served: 0, updated_at: new Date().toISOString() };
 
 const STATUS_COLORS: Record<string, string> = {
   Operational: "#059669",

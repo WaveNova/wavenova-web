@@ -5,14 +5,6 @@ import { supabase } from "@/lib/supabase";
 
 interface Station { name: string; lat: number; lng: number; partner: string }
 
-const FALLBACK_STATIONS: Station[] = [
-  { name: "Selong Belanak", lat: -8.889, lng: 116.228, partner: "SBCA" },
-  { name: "Mawun", lat: -8.912, lng: 116.182, partner: "Eco Mawun" },
-  { name: "Awang", lat: -8.937, lng: 116.295, partner: "Eco Mawun" },
-  { name: "Gili Gede", lat: -8.713, lng: 115.966, partner: "GPS_ggi" },
-  { name: "Kuta — Honest Impact", lat: -8.882, lng: 116.267, partner: "Honest Made" },
-];
-
 export default function StationMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
@@ -27,8 +19,6 @@ export default function StationMap() {
       .then(({ data }) => {
         if (data && data.length > 0) {
           setStations(data.map((p) => ({ name: p.name, lat: p.lat, lng: p.lng, partner: p.partner_slug })));
-        } else {
-          setStations(FALLBACK_STATIONS);
         }
       });
   }, []);

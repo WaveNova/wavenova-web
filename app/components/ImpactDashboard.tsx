@@ -19,7 +19,7 @@ export default function ImpactDashboard({ metrics }: Props) {
       .then(({ data }) => { if (data) setLiveMetrics(data); });
   }, []);
 
-  const m = liveMetrics ?? { total_kg: 47823, active_stations: 5, workers_employed: 18, households_served: 340 };
+  const m = liveMetrics ?? { total_kg: 0, active_stations: 0, workers_employed: 0, households_served: 0 };
 
   const KPI_CARDS = [
     { label: "Total KG Removed", value: m.total_kg.toLocaleString(), icon: "♻️" },
