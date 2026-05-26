@@ -10,7 +10,7 @@ import Footer from "./components/Footer";
 export default function Home() {
   return (
     <main>
-      <Hero totalKg={47823} />
+      <Hero />
       <ProjectGrid projects={[]} />
       <HowItWorks />
       <ImpactDashboard metrics={null} />
