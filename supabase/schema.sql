@@ -59,6 +59,7 @@ create table if not exists donations (
 
 create table if not exists activities (
   id uuid primary key default gen_random_uuid(),
+  project_slug text references projects(slug) on delete cascade,
   station_name text not null,
   action_text text not null,
   created_at timestamptz default now()

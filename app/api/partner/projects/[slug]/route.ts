@@ -22,7 +22,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
 
   const [{ data: project }, { data: activities }] = await Promise.all([
     supabase.from("projects").select("*").eq("slug", slug).maybeSingle(),
-    supabase.from("activities").select("*").order("created_at", { ascending: false }).limit(10),
+    supabase.from("activities").select("*").eq("project_slug", slug).order("created_at", { ascending: false }).limit(10),
   ]);
 
   return NextResponse.json({ project, activities: activities ?? [] });
