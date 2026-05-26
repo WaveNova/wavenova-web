@@ -19,8 +19,15 @@ export default function ImageUpload({ value, onChange, label = "Project Image", 
     if (!file.type.startsWith("image/")) { setError("Please select an image file."); return; }
     const name = file.name.toLowerCase();
     if (file.type === "image/heic" || file.type === "image/heif" || name.endsWith(".heic") || name.endsWith(".heif")) {
-      setError("HEIC photos aren't supported. Open the photo in Files, tap Share → Save Image, then try again.");
-      return;
+      setUploading(true); setError("");
+      try {
+        const { default: heic2any } = await import("heic2any");
+        const blob = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.85 }) as Blob;
+        file = new File([blob], name.replace(/\.(heic|heif)$/i, ".jpg"), { type: "image/jpeg" });
+      } catch {
+        setError("Could not convert HEIC photo. Please export as JPG from your Photos app.");
+        setUploading(false); return;
+      }
     }
     if (file.size > 5 * 1024 * 1024) { setError("Image must be under 5 MB."); return; }
     setError("");
