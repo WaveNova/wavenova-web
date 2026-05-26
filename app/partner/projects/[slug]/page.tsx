@@ -133,7 +133,7 @@ export default function PartnerProjectPage() {
     const res = await fetch("/api/partner/activities", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ station_name: project.name, action_text: actionText }),
+      body: JSON.stringify({ station_name: project.name, action_text: actionText, project_slug: project.slug }),
     });
     const data = await res.json();
     setPosting(false);
