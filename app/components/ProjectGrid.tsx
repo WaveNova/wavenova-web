@@ -19,13 +19,6 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string }> =
   "Launching May": { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-400" },
 };
 
-const FALLBACK_PROJECTS: Project[] = [
-  { id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner_slug: "sbca", location: "South Lombok", status: "Operational", category: "Sorting Stations", kpis: ["5 years running", "12,400 KG", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=800&q=70", since_year: "2021", description: null, lat: null, lng: null, created_at: "" },
-  { id: "2", slug: "mawun", name: "Mawun Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Just Launched", category: "Sorting Stations", kpis: ["New station", "3 workers", "2026"], raised: 800, goal: 4000, image_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=70", since_year: "2026", description: null, lat: null, lng: null, created_at: "" },
-  { id: "3", slug: "awang", name: "Awang Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Beach cleanup May 6", "Sea waste", "Boats"], raised: 400, goal: 4500, image_url: "https://images.unsplash.com/photo-1473625247510-8ceb1760943f?w=800&q=70", since_year: "2026", description: null, lat: null, lng: null, created_at: "" },
-  { id: "4", slug: "gili-gede", name: "Gili Gede Station", partner_slug: "gps-ggi", location: "West Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Island station", "Sea collection", "Early May"], raised: 600, goal: 5500, image_url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=70", since_year: "2026", description: null, lat: null, lng: null, created_at: "" },
-  { id: "5", slug: "kuta-honest-impact", name: "Honest Impact — Kuta", partner_slug: "honest-made", location: "Central Lombok", status: "Operational", category: "Waste Management", kpis: ["Daily sweepers", "River barriers", "Residential"], raised: 4200, goal: 6000, image_url: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=70", since_year: "2021", description: null, lat: null, lng: null, created_at: "" },
-];
 
 type FundTotals = Record<string, { raised: number; goal: number }>;
 
@@ -102,8 +95,7 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
     });
   }, []);
 
-  const data = liveProjects.length > 0 ? liveProjects : FALLBACK_PROJECTS;
-  const filtered = active === "All" ? data : data.filter((p) => p.category === active);
+  const filtered = active === "All" ? liveProjects : liveProjects.filter((p) => p.category === active);
 
   return (
     <section id="projects" className="py-20" style={{ background: "#F8FAFC" }}>
@@ -128,9 +120,16 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filtered.map((p) => <ProjectCard key={p.id} project={p} fundTotals={fundTotals} />)}
-        </div>
+        {filtered.length === 0 ? (
+          <div className="text-center py-16 text-[#9CA3AF]">
+            <p className="text-lg mb-1">No projects yet</p>
+            <p className="text-sm">Partner stations are being onboarded — check back soon.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {filtered.map((p) => <ProjectCard key={p.id} project={p} fundTotals={fundTotals} />)}
+          </div>
+        )}
       </div>
     </section>
   );
