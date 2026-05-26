@@ -17,6 +17,11 @@ export default function ImageUpload({ value, onChange, label = "Project Image", 
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith("image/")) { setError("Please select an image file."); return; }
+    const name = file.name.toLowerCase();
+    if (file.type === "image/heic" || file.type === "image/heif" || name.endsWith(".heic") || name.endsWith(".heif")) {
+      setError("HEIC photos aren't supported. Open the photo in Files, tap Share → Save Image, then try again.");
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) { setError("Image must be under 5 MB."); return; }
     setError("");
     setUploading(true);

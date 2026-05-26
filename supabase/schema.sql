@@ -26,6 +26,7 @@ create table if not exists projects (
   raised numeric(10,2) not null default 0,
   goal numeric(10,2) not null default 5000,
   image_url text not null,
+  image_position text default 'center',
   since_year text,
   description text,
   lat double precision,

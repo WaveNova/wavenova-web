@@ -83,16 +83,16 @@ export default async function DashboardPage() {
           <div className="mb-8">
             <h2 className="font-bold text-lg text-[#1F2937] mb-4">Station Overview</h2>
             <div className="space-y-4">
-              {(projects.length > 0 ? projects : [{
-                id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner_slug: "sbca", location: "South Lombok", status: "Operational" as const, category: "Sorting Stations" as const, kpis: ["12,400 KG", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=400&q=60", since_year: "2021", description: null, lat: null, lng: null, created_at: ""
-              }] as Project[]).map((project) => {
+              {projects.length === 0 ? (
+                <p className="text-[#9CA3AF] text-sm">No stations online yet — check back soon.</p>
+              ) : projects.map((project) => {
                 const pct = Math.min(Math.round((project.raised / project.goal) * 100), 100);
                 const statusColor = STATUS_COLORS[project.status] ?? "#6B7280";
                 return (
                   <div key={project.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] flex gap-4">
                     <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={project.image_url} alt={project.name} className="w-full h-full object-cover" loading="lazy" />
+                      <img src={project.image_url} alt={project.name} className="w-full h-full object-cover" style={{ objectPosition: project.image_position ?? "center" }} loading="lazy" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
@@ -124,6 +124,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* CTA */}
+
           <div className="rounded-2xl p-8 text-center" style={{ background: "#EDF9FB" }}>
             <h2 className="font-[var(--font-dm-serif)] text-3xl mb-2" style={{ color: "#1A7A8A" }}>
               Support a Station

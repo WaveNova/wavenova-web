@@ -24,6 +24,7 @@ export interface Project {
   raised: number;
   goal: number;
   image_url: string;
+  image_position: string | null;
   since_year: string | null;
   description: string | null;
   lat: number | null;
