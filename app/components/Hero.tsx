@@ -43,10 +43,11 @@ interface LiveStats {
   workers: number;
 }
 
-export default function Hero({ totalKg }: { totalKg: number }) {
+export default function Hero() {
+  const [totalKg, setTotalKg] = useState(0);
   const { count, ref } = useCountUp(totalKg);
   const [authState, setAuthState] = useState<AuthState>("loading");
-  const [stats, setStats] = useState<LiveStats>({ partners: 4, projects: 5, stations: 5, workers: 18 });
+  const [stats, setStats] = useState<LiveStats>({ partners: 0, projects: 0, stations: 0, workers: 0 });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -61,14 +62,15 @@ export default function Hero({ totalKg }: { totalKg: number }) {
   useEffect(() => {
     Promise.all([
       supabase.from("partners").select("slug", { count: "exact", head: true }),
-      supabase.from("projects").select("slug", { count: "exact", head: true }),
-      supabase.from("metrics").select("active_stations, workers_employed").limit(1).maybeSingle(),
+      supabase.from("projects").select("slug", { count: "exact", head: true }).neq("slug", "general"),
+      supabase.from("metrics").select("total_kg, active_stations, workers_employed").limit(1).maybeSingle(),
     ]).then(([partnerRes, projectRes, metricsRes]) => {
+      setTotalKg(metricsRes.data?.total_kg ?? 0);
       setStats({
-        partners: partnerRes.count ?? 4,
-        projects: projectRes.count ?? 5,
-        stations: metricsRes.data?.active_stations ?? 5,
-        workers: metricsRes.data?.workers_employed ?? 18,
+        partners: partnerRes.count ?? 0,
+        projects: projectRes.count ?? 0,
+        stations: metricsRes.data?.active_stations ?? 0,
+        workers: metricsRes.data?.workers_employed ?? 0,
       });
     });
   }, []);
