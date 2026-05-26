@@ -254,19 +254,10 @@ export default function DonationSection({ id, projects, defaultProjectSlug }: { 
   const effectiveAmount = custom ? parseFloat(custom) || 0 : amount;
   const totalAmount = effectiveAmount + (tip ? 2 : 0);
 
-  const defaultOptions = [
-    { id: "general", name: "WaveNova General Fund" },
-    { id: "selong-belanak", name: "Selong Belanak — SBCA" },
-    { id: "mawun", name: "Mawun — Eco Mawun" },
-    { id: "awang", name: "Awang — Eco Mawun" },
-    { id: "gili-gede", name: "Gili Gede — GPS_ggi" },
-    { id: "kuta-honest-impact", name: "Kuta — Honest Impact" },
-  ];
-  const projectOptions = [
+  const options = [
     { id: "general", name: "WaveNova General Fund" },
     ...projects.map((p) => ({ id: p.slug, name: p.name })),
   ];
-  const options = projects.length > 0 ? projectOptions : defaultOptions;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
