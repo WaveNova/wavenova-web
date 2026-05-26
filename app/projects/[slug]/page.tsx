@@ -8,21 +8,13 @@ import DonationSection from "@/app/components/DonationSection";
 
 export const revalidate = 60;
 
-const FALLBACK_PROJECTS: Project[] = [
-  { id: "1", slug: "selong-belanak", name: "Selong Belanak Station", partner_slug: "sbca", location: "South Lombok", status: "Operational", category: "Sorting Stations", kpis: ["5 years running", "12,400 KG collected", "4 workers"], raised: 3200, goal: 5000, image_url: "https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=800&q=70", since_year: "2021", description: "The original Blue Loop station — WaveNova's Chapter 1. SBCA has been collecting, sorting, and selling plastic waste from South Lombok's beaches for 5 years.", lat: null, lng: null, created_at: "" },
-  { id: "2", slug: "mawun", name: "Mawun Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Just Launched", category: "Sorting Stations", kpis: ["New station", "3 workers", "2026"], raised: 800, goal: 4000, image_url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=70", since_year: "2026", description: "A brand-new sorting station at Mawun beach, operated by the Eco Mawun team.", lat: null, lng: null, created_at: "" },
-  { id: "3", slug: "awang", name: "Awang Station", partner_slug: "eco-mawun", location: "South Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Beach cleanup May 6", "Sea waste", "Boats"], raised: 400, goal: 4500, image_url: "https://images.unsplash.com/photo-1473625247510-8ceb1760943f?w=800&q=70", since_year: "2026", description: "Kicking off May 6, 2026 with a major beach cleanup, followed by setup of a sorting station in Awang.", lat: null, lng: null, created_at: "" },
-  { id: "4", slug: "gili-gede", name: "Gili Gede Station", partner_slug: "gps-ggi", location: "West Lombok", status: "Launching May", category: "Sorting Stations", kpis: ["Island station", "Sea collection", "Early May"], raised: 600, goal: 5500, image_url: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=70", since_year: "2026", description: "An island-based sorting station on Gili Gede, operated by GPS_ggi in partnership with Marina Del Ray.", lat: null, lng: null, created_at: "" },
-  { id: "5", slug: "kuta-honest-impact", name: "Honest Impact — Kuta", partner_slug: "honest-made", location: "Central Lombok", status: "Operational", category: "Waste Management", kpis: ["Daily sweepers", "River barriers", "Residential"], raised: 4200, goal: 6000, image_url: "https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=800&q=70", since_year: "2021", description: "The social arm of Honest Made — daily road sweepers, river barriers, and residential waste collection in Kuta.", lat: null, lng: null, created_at: "" },
-];
-
 async function getProject(slug: string): Promise<Project | null> {
   try {
     const supabase = createServerClient();
     const { data } = await supabase.from("projects").select("*").eq("slug", slug).single();
     return data;
   } catch {
-    return FALLBACK_PROJECTS.find((p) => p.slug === slug) ?? null;
+    return null;
   }
 }
 
@@ -51,13 +43,13 @@ async function getFunds(slug: string): Promise<Fund[]> {
   }
 }
 
-async function getActivities(stationName: string): Promise<Activity[]> {
+async function getActivities(projectSlug: string): Promise<Activity[]> {
   try {
     const supabase = createServerClient();
     const { data } = await supabase
       .from("activities")
       .select("*")
-      .eq("station_name", stationName)
+      .eq("project_slug", projectSlug)
       .order("created_at", { ascending: false })
       .limit(8);
     return data ?? [];
@@ -82,7 +74,7 @@ export async function generateStaticParams() {
     const { data } = await supabase.from("projects").select("slug");
     return (data ?? []).map((p: { slug: string }) => ({ slug: p.slug }));
   } catch {
-    return FALLBACK_PROJECTS.map((p) => ({ slug: p.slug }));
+    return [];
   }
 }
 
@@ -106,7 +98,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
 
   const [partner, activities] = await Promise.all([
     getPartner(project.partner_slug),
-    getActivities(project.name),
+    getActivities(slug),
   ]);
 
   const status = STATUS_COLORS[project.status] ?? STATUS_COLORS["Operational"];
@@ -136,7 +128,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         {/* Hero — cinematic height */}
         <div className="relative h-[60vh] md:h-[70vh] overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={project.image_url} alt={project.name} className="w-full h-full object-cover" />
+          <img src={project.image_url} alt={project.name} className="w-full h-full object-cover" style={{ objectPosition: project.image_position ?? "center" }} />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           <div className="absolute bottom-8 left-6 right-6 md:left-10 md:right-10">
             <span className={`text-xs px-3 py-1.5 rounded-full font-semibold inline-block mb-3 ${status.bg} ${status.text}`}>

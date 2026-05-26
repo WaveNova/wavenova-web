@@ -32,7 +32,7 @@ function ProjectCard({ project, fundTotals }: { project: Project; fundTotals: Fu
     <div className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.06)] hover:shadow-[0_8px_24px_rgba(0,0,0,0.10)] transition-shadow">
       <div className="relative h-48 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={project.image_url} alt={project.name} className="w-full h-full object-cover" loading="lazy" />
+        <img src={project.image_url} alt={project.name} className="w-full h-full object-cover" style={{ objectPosition: project.image_position ?? "center" }} loading="lazy" />
         <div className={`absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${status.bg} ${status.text}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${status.dot} pulse-dot`} />
           {project.status}

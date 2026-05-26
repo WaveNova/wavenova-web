@@ -64,6 +64,7 @@ export default function PartnerProjectPage() {
   const [editDesc, setEditDesc] = useState("");
   const [editKpis, setEditKpis] = useState<string[]>([]);
   const [editImage, setEditImage] = useState("");
+  const [editPosition, setEditPosition] = useState("center");
   const [editLat, setEditLat] = useState<number | null>(null);
   const [editLng, setEditLng] = useState<number | null>(null);
   const [savingProject, setSavingProject] = useState(false);
@@ -110,6 +111,7 @@ export default function PartnerProjectPage() {
       setEditDesc(projData.project?.description ?? "");
       setEditKpis(projData.project?.kpis ?? []);
       setEditImage(projData.project?.image_url ?? "");
+      setEditPosition(projData.project?.image_position ?? "center");
       setEditLat(projData.project?.lat ?? null);
       setEditLng(projData.project?.lng ?? null);
 
@@ -150,7 +152,7 @@ export default function PartnerProjectPage() {
     const res = await fetch(`/api/partner/projects/${slug}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ description: editDesc, kpis: editKpis, image_url: editImage, lat: editLat, lng: editLng }),
+      body: JSON.stringify({ description: editDesc, kpis: editKpis, image_url: editImage, image_position: editPosition, lat: editLat, lng: editLng }),
     });
     const data = await res.json();
     setSavingProject(false);
@@ -274,6 +276,26 @@ export default function PartnerProjectPage() {
                 </div>
                 <div>
                   <ImageUpload label="Project Image" value={editImage} onChange={setEditImage} />
+                  {editImage && (
+                    <div className="mt-2">
+                      <label className="block text-xs font-semibold text-[#6B7280] mb-1">Image Focus Area</label>
+                      <div className="relative w-full h-28 rounded-lg overflow-hidden mb-2">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={editImage} alt="preview" className="w-full h-full object-cover" style={{ objectPosition: editPosition }} />
+                      </div>
+                      <div className="flex gap-2">
+                        {(["top", "center", "bottom"] as const).map((pos) => (
+                          <button key={pos} type="button" onClick={() => setEditPosition(pos)}
+                            className="flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-colors capitalize"
+                            style={editPosition === pos
+                              ? { background: "#24B5CB", color: "#fff", borderColor: "#24B5CB" }
+                              : { background: "#fff", color: "#6B7280", borderColor: "#D1D5DB" }}>
+                            {pos}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#6B7280] mb-1">Station Location</label>

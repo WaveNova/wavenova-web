@@ -94,7 +94,7 @@ export default async function DashboardPage() {
                   <div key={project.id} className="bg-white rounded-2xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] flex gap-4">
                     <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={project.image_url} alt={project.name} className="w-full h-full object-cover" loading="lazy" />
+                      <img src={project.image_url} alt={project.name} className="w-full h-full object-cover" style={{ objectPosition: project.image_position ?? "center" }} loading="lazy" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
@@ -126,6 +126,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* CTA */}
+
           <div className="rounded-2xl p-8 text-center" style={{ background: "#EDF9FB" }}>
             <h2 className="font-[var(--font-dm-serif)] text-3xl mb-2" style={{ color: "#1A7A8A" }}>
               Support a Station
