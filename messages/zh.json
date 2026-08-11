@@ -1,0 +1,97 @@
+{
+  "nav": {
+    "method": "我們怎麼做",
+    "villages": "五個村落",
+    "cleanups": "淨灘活動",
+    "impact": "成效數據",
+    "support": "支持我們"
+  },
+  "hero": {
+    "kicker": "南龍目 + 台灣",
+    "heading": "在垃圾進入海洋之前攔截它",
+    "body": "我們不只是清理海灘。我們在海洋污染的源頭，建設分類站，讓垃圾在抵達海邊之前就被攔截。",
+    "ctaPrimary": "看我們怎麼做",
+    "ctaSecondary": "企業合作",
+    "tagIndonesia": "印尼南龍目 — 5 座分類站",
+    "tagTaiwan": "台灣 — 每月淨灘"
+  },
+  "statStrip": {
+    "kgLabel": "單一分類站 2025 年垃圾處理量",
+    "kgSource": "資料來源：SBCA，Selong Belanak",
+    "bizLabel": "付費會員商家",
+    "bizSub": "足以支撐分類站的營運成本",
+    "stationsLabel": "印尼海岸線分類站",
+    "stationsList": "GILI GEDE · SELONG BELANAK · MAWUN · AWANG · EKAS",
+    "volunteersLabel": "台灣志工出動次數",
+    "volunteersSub": "最大單場活動有 350 人參與"
+  },
+  "playbook": {
+    "kicker": "村落推廣手冊",
+    "heading": "從海灘淨灘到農村基礎建設",
+    "sub": "同一套流程，從一個村落複製到下一個",
+    "phase1Kicker": "第一階段",
+    "phase1Heading": "海岸清潔隊",
+    "phase1Body": "聘用當地婦女擔任清潔隊，從海灘淨灘與固定收集點出發，為建設分類站打好基礎。",
+    "phase1Cost": "約 US$1,400/月 · 4,353 公斤（2026 年 7 月）",
+    "phase2Kicker": "第二階段",
+    "phase2Heading": "建設分類站",
+    "phase2Body": "建造基礎分類站——屋頂、圍欄、分類區——逐步發展成服務整個村落的廢棄物基礎建設。",
+    "phase2Cost": "約 US$5,000 · 一次性建設費用",
+    "phase3Kicker": "第三階段",
+    "phase3Heading": "自負盈虧",
+    "phase3Body": "加裝焚化爐、碎紙機與堆肥區，與當地商家合作，一步一步走向收支平衡。",
+    "phase3Cost": "約 US$25,000 · 焚化爐＋碎紙機"
+  },
+  "stations": {
+    "kicker": "分類站狀態",
+    "heading": "每個分類站的進度",
+    "legendComplete": "已完成",
+    "legendInProgress": "進行中",
+    "legendNotStarted": "尚未開始",
+    "colVillage": "村落",
+    "colPhase1": "第一階段 · 清潔隊",
+    "colPhase2": "第二階段 · 分類站",
+    "colPhase3": "第三階段 · 自負盈虧"
+  },
+  "taiwan": {
+    "kicker": "台灣 · 每月淨灘",
+    "heading": "回到起點——海灘淨灘",
+    "body": "每個月一場淨灘，讓更多人走出戶外，親眼面對這個問題。",
+    "badgeOpen": "開放報名",
+    "spots": "個名額",
+    "people": "人",
+    "signUp": "立即報名 →",
+    "empty": "近期暫無活動。追蹤 @wavenova.ocean Instagram 掌握最新場次。",
+    "viewMore": "查看所有活動 →"
+  },
+  "support": {
+    "kicker": "支持我們",
+    "heading": "三種支持方式",
+    "esgTitle": "企業 ESG 合作",
+    "esgBadge": "開放中",
+    "esgBody": "贊助我們的淨灘活動——讓你的品牌出現在海岸線上。",
+    "esgCta": "聯絡我們 →",
+    "donateTitle": "國際捐款",
+    "donateBadge": "開放中",
+    "donateBody": "透過 Wise 或 PayPal 轉帳到財團法人帳戶，標記指定分類站，即可獲得收據與每季報告。",
+    "donateCta": "查看匯款資訊 →",
+    "memberTitle": "會員制度",
+    "memberBadge": "即將推出",
+    "memberBody": "信用卡付款功能仍在申請中。",
+    "memberCta": "留下 Email，上線通知你 →"
+  },
+  "footer": {
+    "tagline": "在台灣與印尼龍目島攔截海洋廢棄物——從海灘淨灘到農村廢棄物基礎建設。",
+    "orgHeading": "關於組織",
+    "orgMethod": "我們怎麼做",
+    "orgVillages": "五個村落",
+    "orgImpact": "成效數據與來源",
+    "involvedHeading": "參與其中",
+    "involvedCleanup": "參加台灣淨灘",
+    "involvedCorporate": "企業合作",
+    "involvedDonate": "國際捐款",
+    "involvedVolunteer": "分類站志工",
+    "copyright": "© 2026 Yayasan Wave Nova Ocean · 印尼龍目島",
+    "entity": "Wave Nova 協會（籌備中）· 台灣"
+  }
+}

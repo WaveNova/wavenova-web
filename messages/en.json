@@ -1,0 +1,97 @@
+{
+  "nav": {
+    "method": "Our method",
+    "villages": "Five villages",
+    "cleanups": "Cleanups",
+    "impact": "Impact",
+    "support": "Support us"
+  },
+  "hero": {
+    "kicker": "South Lombok + Taiwan",
+    "heading": "Stopping waste before it reaches the ocean",
+    "body": "We don't just clean beaches. At the source of ocean pollution, we build sorting stations that intercept the waste before it gets there.",
+    "ctaPrimary": "See how it works",
+    "ctaSecondary": "Corporate partnerships",
+    "tagIndonesia": "South Lombok, Indonesia — 5 Sorting stations",
+    "tagTaiwan": "Taiwan — monthly cleanups"
+  },
+  "statStrip": {
+    "kgLabel": "Waste handled at one station in 2025",
+    "kgSource": "Source · SBCA, Selong Belanak",
+    "bizLabel": "Paying member businesses",
+    "bizSub": "Covers the station's operating costs",
+    "stationsLabel": "Coastal stations in Indonesia",
+    "stationsList": "GILI GEDE · SELONG BELANAK · MAWUN · AWANG · EKAS",
+    "volunteersLabel": "Volunteer turnouts in Taiwan",
+    "volunteersSub": "350 people at our largest single event"
+  },
+  "playbook": {
+    "kicker": "The Village Playbook",
+    "heading": "From beach cleanups to rural infrastructure",
+    "sub": "The same process, copy-pasted from one village to the next",
+    "phase1Kicker": "Phase 01",
+    "phase1Heading": "Coastal cleanup crew",
+    "phase1Body": "Hire local women as a cleanup crew, start with beach cleanups and fixed collection points, and prepare the ground for a sorting station.",
+    "phase1Cost": "≈ US$1,400/mo · 4,353 kg (July, 2026)",
+    "phase2Kicker": "Phase 02",
+    "phase2Heading": "Build the sorting station",
+    "phase2Body": "Build the basic sorting station — roof, fencing, sorting bays — and grow it into real waste infrastructure for the village.",
+    "phase2Cost": "≈ US$5,000 · one-off capital",
+    "phase3Kicker": "Phase 03",
+    "phase3Heading": "Self-sustaining",
+    "phase3Body": "Add the incinerator, shredder and compost area, work with local businesses, and move step by step toward breaking even.",
+    "phase3Cost": "≈ US$25,000 · incinerator + shredder"
+  },
+  "stations": {
+    "kicker": "Station status",
+    "heading": "Where each station stands",
+    "legendComplete": "Complete",
+    "legendInProgress": "In progress",
+    "legendNotStarted": "Not started",
+    "colVillage": "Village",
+    "colPhase1": "Phase 01 · Crew",
+    "colPhase2": "Phase 02 · Station",
+    "colPhase3": "Phase 03 · Self-funded"
+  },
+  "taiwan": {
+    "kicker": "Taiwan · Monthly cleanups",
+    "heading": "Back to where it started — the beach cleanup",
+    "body": "A cleanup every month gets more people out of the house and face to face with the problem.",
+    "badgeOpen": "Open for signup",
+    "spots": "spots",
+    "people": "people",
+    "signUp": "Sign up →",
+    "empty": "No upcoming events. Follow @wavenova.ocean on Instagram for the next one.",
+    "viewMore": "View all events →"
+  },
+  "support": {
+    "kicker": "Support us",
+    "heading": "Three ways to support us",
+    "esgTitle": "Corporate ESG partnership",
+    "esgBadge": "Open",
+    "esgBody": "Sponsor our cleanups — bring your brand's reach to the shoreline.",
+    "esgCta": "Talk to us →",
+    "donateTitle": "International donations",
+    "donateBadge": "Open",
+    "donateBody": "Transfer to the Yayasan account via Wise or PayPal, tag a station, and receive a receipt plus quarterly reports.",
+    "donateCta": "View transfer details →",
+    "memberTitle": "Membership",
+    "memberBadge": "Coming soon",
+    "memberBody": "Card payments are still in application.",
+    "memberCta": "Leave your email, we'll tell you →"
+  },
+  "footer": {
+    "tagline": "Intercepting ocean plastic in Taiwan and Lombok, Indonesia — from beach cleanups to rural waste infrastructure.",
+    "orgHeading": "Organisation",
+    "orgMethod": "Our method",
+    "orgVillages": "Five villages",
+    "orgImpact": "Impact and sources",
+    "involvedHeading": "Get involved",
+    "involvedCleanup": "Join a Taiwan cleanup",
+    "involvedCorporate": "Corporate partnerships",
+    "involvedDonate": "International donations",
+    "involvedVolunteer": "Station volunteering",
+    "copyright": "© 2026 Yayasan Wave Nova Ocean · Lombok, Indonesia",
+    "entity": "Wave Nova Association, R.O.C. (in registration) · Taiwan"
+  }
+}

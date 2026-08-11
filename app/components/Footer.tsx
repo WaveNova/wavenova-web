@@ -1,120 +1,116 @@
-"use client";
-
-import Image from "next/image";
-import { ExternalLink, Mail } from "lucide-react";
-
-const QUICK_LINKS = [
-  { label: "Projects", href: "#projects" },
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "About", href: "/about" },
-];
-
-const FOR_DONORS = [
-  { label: "Transparency", href: "/dashboard" },
-];
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 
 export default function Footer() {
+  const t = useTranslations('footer');
+
   return (
-    <footer style={{ background: "#1A7A8A" }} className="text-white">
-      <div className="max-w-6xl mx-auto px-6 py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 mb-10">
-          {/* Col 1 */}
+    <footer style={{
+      padding: 'clamp(52px,6vw,80px) clamp(20px,5vw,40px) 32px',
+      background: 'var(--navy-800)',
+      borderTop: '1px solid rgba(126,151,172,.22)',
+    }}>
+      <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+          gap: 'clamp(28px,4vw,56px)',
+        }}>
+          {/* Brand column */}
           <div>
             <Image
-              src="/logo.png"
+              src="/logo-horizontal-white.png"
               alt="WaveNova"
-              width={200}
-              height={56}
-              className="mb-4 brightness-0 invert h-12 w-auto"
+              width={132}
+              height={34}
+              style={{ height: 34, width: 'auto' }}
             />
-            <p className="text-white/70 text-sm leading-relaxed mb-3">
-              A curated portfolio of grassroots environmental projects in Lombok, Indonesia.
+            <p style={{
+              margin: '16px 0 0',
+              maxWidth: '34ch',
+              fontFamily: 'var(--font-instrument-sans), var(--font-dm-sans), sans-serif',
+              fontSize: 14,
+              lineHeight: 1.7,
+              color: '#7E97AC',
+            }}>
+              {t('tagline')}
             </p>
-            <p className="text-white/50 text-xs">WaveNova Yayasan</p>
-            <p className="text-white/50 text-xs">Lombok, Indonesia</p>
           </div>
 
-          {/* Col 2 */}
+          {/* Organisation */}
           <div>
-            <h4 className="font-semibold mb-4 text-sm">Quick Links</h4>
-            <ul className="space-y-2.5">
-              {QUICK_LINKS.map((l) => (
-                <li key={l.label}>
-                  <a
-                    href={l.href}
-                    className="text-white/70 text-sm hover:text-white transition-colors hover:underline"
-                  >
-                    {l.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <p style={{
+              margin: '0 0 16px',
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
+              fontSize: 10.5,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
+              color: '#7E97AC',
+            }}>
+              {t('orgHeading')}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 11, fontSize: 14 }}>
+              <a href="#playbook" style={{ color: '#F5F7F8', textDecoration: 'none' }}>{t('orgMethod')}</a>
+              <a href="#stations" style={{ color: '#F5F7F8', textDecoration: 'none' }}>{t('orgVillages')}</a>
+              <a href="#stations" style={{ color: '#F5F7F8', textDecoration: 'none' }}>{t('orgImpact')}</a>
+            </div>
           </div>
 
-          {/* Col 3 */}
+          {/* Get involved */}
           <div>
-            <h4 className="font-semibold mb-4 text-sm">For Donors</h4>
-            <ul className="space-y-2.5">
-              {FOR_DONORS.map((l) => (
-                <li key={l.label}>
-                  <a
-                    href={l.href}
-                    className="text-white/70 text-sm hover:text-white transition-colors hover:underline"
-                  >
-                    {l.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <p style={{
+              margin: '0 0 16px',
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
+              fontSize: 10.5,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
+              color: '#7E97AC',
+            }}>
+              {t('involvedHeading')}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 11, fontSize: 14 }}>
+              <a href="#taiwan"  style={{ color: '#F5F7F8', textDecoration: 'none' }}>{t('involvedCleanup')}</a>
+              <a href="#support" style={{ color: '#F5F7F8', textDecoration: 'none' }}>{t('involvedCorporate')}</a>
+              <a href="#support" style={{ color: '#F5F7F8', textDecoration: 'none' }}>{t('involvedDonate')}</a>
+              <a href="#support" style={{ color: '#F5F7F8', textDecoration: 'none' }}>{t('involvedVolunteer')}</a>
+            </div>
           </div>
 
-          {/* Col 4 */}
+          {/* Connect */}
           <div>
-            <h4 className="font-semibold mb-4 text-sm">Stay Connected</h4>
-            <a
-              href="https://instagram.com/wavenova.ocean"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm mb-3"
-            >
-              <ExternalLink size={16} />
-              @wavenova.ocean (Instagram)
-            </a>
-            <a
-              href="https://www.threads.net/@wavenova.ocean"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm mb-3"
-            >
-              <ExternalLink size={16} />
-              @wavenova.ocean (Threads)
-            </a>
-            <a
-              href="https://x.com/WaveNovaOcean"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm mb-3"
-            >
-              <ExternalLink size={16} />
-              @WaveNovaOcean (X)
-            </a>
-            <a
-              href="mailto:hi@wavenova.org"
-              className="flex items-center gap-2 text-white/70 hover:text-white transition-colors text-sm"
-            >
-              <Mail size={16} />
-              hi@wavenova.org
-            </a>
+            <p style={{
+              margin: '0 0 16px',
+              fontFamily: 'var(--font-jetbrains-mono), monospace',
+              fontSize: 10.5,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase' as const,
+              color: '#7E97AC',
+            }}>
+              Connect
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 11, fontSize: 14 }}>
+              <a href="mailto:hi@wavenova.org" style={{ color: '#F5F7F8', textDecoration: 'none' }}>hi@wavenova.org</a>
+              <a href="https://instagram.com/wavenova.ocean" target="_blank" rel="noopener noreferrer" style={{ color: '#F5F7F8', textDecoration: 'none' }}>IG @wavenova.ocean</a>
+              <span style={{ color: '#7E97AC' }}>South Lombok · Taipei</span>
+            </div>
           </div>
         </div>
 
-        <div
-          className="border-t border-white/15 pt-6 flex flex-col sm:flex-row justify-between items-center gap-3 text-white/50 text-xs"
-        >
-          <p>© 2026 WaveNova Yayasan. All donations are project-tagged and publicly reported.</p>
-          <p className="text-center sm:text-right">
-            Lombok, Indonesia · Yayasan (Indonesian Nonprofit Foundation)
-          </p>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          gap: 20,
+          flexWrap: 'wrap' as const,
+          marginTop: 'clamp(40px,5vw,64px)',
+          paddingTop: 20,
+          borderTop: '1px solid rgba(126,151,172,.22)',
+          fontFamily: 'var(--font-jetbrains-mono), monospace',
+          fontSize: 10.5,
+          letterSpacing: '0.06em',
+          color: '#7E97AC',
+        }}>
+          <span>{t('copyright')}</span>
+          <span>{t('entity')}</span>
         </div>
       </div>
     </footer>
