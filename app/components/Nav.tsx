@@ -1,24 +1,19 @@
 'use client';
 
-import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
-import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useLocale, useTranslations } from 'next-intl';
+import { Link, useRouter, usePathname } from '../../i18n/navigation';
 
 export default function Nav() {
   const t = useTranslations('nav');
   const locale = useLocale();
-  const pathname = usePathname();
   const router = useRouter();
+  const pathname = usePathname(); // locale-stripped; '/' on both / and /zh
 
   function switchLocale(next: 'en' | 'zh') {
     if (next === locale) return;
-    if (next === 'en') {
-      // strip /zh prefix
-      router.push(pathname.replace(/^\/zh/, '') || '/');
-    } else {
-      router.push('/zh' + (pathname === '/' ? '' : pathname));
-    }
+    // router.push from createNavigation handles prefix automatically
+    router.push(pathname, { locale: next });
   }
 
   const links = [
@@ -44,7 +39,8 @@ export default function Nav() {
       WebkitBackdropFilter: 'blur(14px)',
       borderBottom: '1px solid rgba(126,151,172,.22)',
     }}>
-      <Link href={locale === 'en' ? '/' : '/zh'} aria-label="WaveNova" style={{ display: 'flex', alignItems: 'center' }}>
+      {/* Logo — locale-aware Link keeps prefix correct */}
+      <Link href="/" aria-label="WaveNova" style={{ display: 'flex', alignItems: 'center' }}>
         <Image
           src="/logo-horizontal-white.png"
           alt="WaveNova"
