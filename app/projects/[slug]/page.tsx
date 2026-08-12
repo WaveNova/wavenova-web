@@ -3,7 +3,6 @@ import { createServerClient } from "@/lib/supabase-server";
 import type { Project, Fund, Partner, Activity } from "@/lib/database.types";
 import Image from "next/image";
 import { MapPin } from "lucide-react";
-import Footer from "@/app/components/Footer";
 import DonationSection from "@/app/components/DonationSection";
 
 export const revalidate = 60;
@@ -117,11 +116,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             <Image src="/logo.png" alt="WaveNova" width={200} height={56} className="h-12 w-auto" />
           </a>
           <a
-            href="#donate"
+            href="mailto:hi@wavenova.org"
             className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white"
             style={{ background: "#24B5CB" }}
           >
-            Donate Now
+            Contact us
           </a>
         </nav>
 
@@ -237,11 +236,11 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
                   <p className="text-[#9CA3AF] text-sm mb-6">Fundraising coming soon.</p>
                 )}
                 <a
-                  href="#donate"
+                  href="mailto:hi@wavenova.org?subject=Donation%20Enquiry"
                   className="block w-full text-center py-3.5 rounded-xl text-white font-semibold text-sm"
                   style={{ background: "#24B5CB" }}
                 >
-                  Donate to This Project
+                  Contact us to donate
                 </a>
                 <p className="text-[#9CA3AF] text-xs text-center mt-3">
                   100% traceable · Bank transfer · WaveNova Yayasan
@@ -328,7 +327,6 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
       </main>
       <DonationSection id="donate" projects={[project]} defaultProjectSlug={slug} />
-      <Footer />
     </>
   );
 }
