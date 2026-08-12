@@ -1,7 +1,7 @@
 {
   "nav": {
     "method": "我們怎麼做",
-    "villages": "五個村落",
+    "villages": "分類站進度",
     "cleanups": "淨灘活動",
     "impact": "成效數據",
     "support": "支持我們"
@@ -27,7 +27,7 @@
   },
   "playbook": {
     "kicker": "村落推廣手冊",
-    "heading": "從海灘淨灘到農村基礎建設",
+    "heading": "從淨灘到偏鄉基礎建設",
     "sub": "同一套流程，從一個村落複製到下一個",
     "phase1Kicker": "第一階段",
     "phase1Heading": "海岸清潔隊",
@@ -75,16 +75,31 @@
     "donateBadge": "開放中",
     "donateBody": "透過 Wise 或 PayPal 轉帳到財團法人帳戶，標記指定分類站，即可獲得收據與每季報告。",
     "donateCta": "查看匯款資訊 →",
-    "memberTitle": "會員制度",
+    "memberTitle": "訂閱支持",
     "memberBadge": "即將推出",
     "memberBody": "信用卡付款功能仍在申請中。",
-    "memberCta": "留下 Email，上線通知你 →"
+    "memberCta": "留下 Email，上線通知你 →",
+    "memberPlaceholder": "your@email.com",
+    "memberSubmit": "訂閱通知",
+    "memberSuccess": "感謝訂閱，上線時第一時間通知你。",
+    "memberError": "發生錯誤，請再試一次。"
+  },
+  "donate": {
+    "heading": "匯款資訊",
+    "bank": "銀行 Bank",
+    "account": "帳號 Account No.",
+    "holder": "戶名 Account Holder",
+    "swift": "SWIFT Code",
+    "copy": "複製",
+    "copied": "已複製",
+    "note": "匯款完成後，請將姓名與匯款金額 email 至 hi@wavenova.org，我們會確認入帳並寄送收據與指定站點的季度報告。",
+    "close": "關閉"
   },
   "footer": {
-    "tagline": "在台灣與印尼龍目島攔截海洋廢棄物——從海灘淨灘到農村廢棄物基礎建設。",
+    "tagline": "在台灣與印尼龍目島攔截海洋廢棄物——從淨灘到偏鄉廢棄物基礎建設。",
     "orgHeading": "關於組織",
     "orgMethod": "我們怎麼做",
-    "orgVillages": "五個村落",
+    "orgVillages": "分類站進度",
     "orgImpact": "成效數據與來源",
     "involvedHeading": "參與其中",
     "involvedCleanup": "參加台灣淨灘",

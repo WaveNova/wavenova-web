@@ -1,5 +1,6 @@
 import { setRequestLocale } from 'next-intl/server';
 import { createServerClient } from '../../lib/supabase-server';
+import { BANK_INFO } from '../../lib/bank-info';
 import Nav from '../components/Nav';
 import Hero from '../components/Hero';
 import StatStrip from '../components/StatStrip';
@@ -55,7 +56,7 @@ export default async function HomePage({ params }: Props) {
         <VillagePlaybook />
         <StationStatusTrack stations={sortedStations ?? []} />
         <TaiwanCleanups />
-        <SupportBlock />
+        <SupportBlock bankInfo={BANK_INFO} />
       </main>
       <Footer />
     </>

@@ -56,7 +56,7 @@ export default function Nav() {
           <a
             key={l.label}
             href={l.href}
-            style={{ fontSize: 14, fontWeight: 500, color: '#7E97AC', textDecoration: 'none' }}
+            style={{ fontSize: 14, fontWeight: 500, color: 'var(--on-dark-muted)', textDecoration: 'none' }}
           >
             {l.label}
           </a>
@@ -78,7 +78,7 @@ export default function Nav() {
               padding: '6px 10px',
               border: 0,
               background: locale === 'zh' ? 'var(--teal-500)' : 'transparent',
-              color: locale === 'zh' ? 'var(--navy-800)' : '#7E97AC',
+              color: locale === 'zh' ? 'var(--navy-800)' : 'var(--on-dark-muted)',
               fontFamily: "'Noto Sans TC', sans-serif",
               fontSize: 13,
               fontWeight: 500,
@@ -96,7 +96,7 @@ export default function Nav() {
               border: 0,
               borderLeft: '1px solid rgba(126,151,172,.22)',
               background: locale === 'en' ? 'var(--teal-500)' : 'transparent',
-              color: locale === 'en' ? 'var(--navy-800)' : '#7E97AC',
+              color: locale === 'en' ? 'var(--navy-800)' : 'var(--on-dark-muted)',
               fontFamily: 'var(--font-jetbrains-mono), monospace',
               fontSize: 12,
               letterSpacing: '0.06em',

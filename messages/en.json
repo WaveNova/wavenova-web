@@ -1,7 +1,7 @@
 {
   "nav": {
     "method": "Our method",
-    "villages": "Five villages",
+    "villages": "Station Progress",
     "cleanups": "Cleanups",
     "impact": "Impact",
     "support": "Support us"
@@ -27,7 +27,7 @@
   },
   "playbook": {
     "kicker": "The Village Playbook",
-    "heading": "From beach cleanups to rural infrastructure",
+    "heading": "From cleanups to infrastructure in remote villages",
     "sub": "The same process, copy-pasted from one village to the next",
     "phase1Kicker": "Phase 01",
     "phase1Heading": "Coastal cleanup crew",
@@ -75,16 +75,31 @@
     "donateBadge": "Open",
     "donateBody": "Transfer to the Yayasan account via Wise or PayPal, tag a station, and receive a receipt plus quarterly reports.",
     "donateCta": "View transfer details →",
-    "memberTitle": "Membership",
+    "memberTitle": "Subscription Support",
     "memberBadge": "Coming soon",
     "memberBody": "Card payments are still in application.",
-    "memberCta": "Leave your email, we'll tell you →"
+    "memberCta": "Leave your email, we'll tell you →",
+    "memberPlaceholder": "your@email.com",
+    "memberSubmit": "Notify me",
+    "memberSuccess": "Thanks — we'll let you know the moment it's live.",
+    "memberError": "Something went wrong. Please try again."
+  },
+  "donate": {
+    "heading": "Bank transfer details",
+    "bank": "Bank",
+    "account": "Account No.",
+    "holder": "Account Holder",
+    "swift": "SWIFT Code",
+    "copy": "Copy",
+    "copied": "Copied",
+    "note": "After transferring, email your name and amount to hi@wavenova.org — we'll confirm receipt and send a quarterly report for your chosen station.",
+    "close": "Close"
   },
   "footer": {
-    "tagline": "Intercepting ocean plastic in Taiwan and Lombok, Indonesia — from beach cleanups to rural waste infrastructure.",
+    "tagline": "Intercepting ocean plastic in Taiwan and Lombok, Indonesia — from cleanups to waste infrastructure in remote villages.",
     "orgHeading": "Organisation",
     "orgMethod": "Our method",
-    "orgVillages": "Five villages",
+    "orgVillages": "Station Progress",
     "orgImpact": "Impact and sources",
     "involvedHeading": "Get involved",
     "involvedCleanup": "Join a Taiwan cleanup",

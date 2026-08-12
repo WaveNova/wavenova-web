@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase-server";
+import { BANK_INFO } from "@/lib/bank-info";
 
 function generateReferenceCode(): string {
   const year = new Date().getFullYear();
@@ -79,10 +80,10 @@ export async function POST(req: NextRequest) {
       success: true,
       referenceCode,
       projectName,
-      bankName: process.env.WAVENOVA_BANK_NAME ?? "OCBC",
-      bankAccount: process.env.WAVENOVA_BANK_ACCOUNT ?? "160800030803",
-      bankHolder: process.env.WAVENOVA_BANK_HOLDER ?? "Yayasan Wave Nova Ocean",
-      bankSwift: process.env.WAVENOVA_BANK_SWIFT ?? "NISPIDJA",
+      bankName: BANK_INFO.bank,
+      bankAccount: BANK_INFO.account,
+      bankHolder: BANK_INFO.holder,
+      bankSwift: BANK_INFO.swift,
     });
   } catch (err) {
     console.error("Donation API error:", err);
