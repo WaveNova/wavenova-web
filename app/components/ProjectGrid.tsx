@@ -120,12 +120,15 @@ export default function ProjectGrid({ projects }: { projects: Project[] }) {
             </button>
           ))}
         </div>
-        {filtered.length > 0 ? (
+        {filtered.length === 0 ? (
+          <div className="text-center py-16 text-[#9CA3AF]">
+            <p className="text-lg mb-1">No projects yet</p>
+            <p className="text-sm">Partner stations are being onboarded — check back soon.</p>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filtered.map((p) => <ProjectCard key={p.id} project={p} fundTotals={fundTotals} />)}
           </div>
-        ) : (
-          <p className="text-center text-[#9CA3AF] py-12">No projects yet — partner stations are being onboarded, check back soon.</p>
         )}
       </div>
     </section>

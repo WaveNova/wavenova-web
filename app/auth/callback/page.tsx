@@ -10,7 +10,7 @@ function CallbackHandler() {
 
   useEffect(() => {
     const code = searchParams.get("code");
-    const next = searchParams.get("next") ?? "/#donate";
+    const next = searchParams.get("next") ?? "/account";
 
     if (code) {
       supabase.auth.exchangeCodeForSession(code).then(async ({ data }) => {

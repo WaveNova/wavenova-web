@@ -84,7 +84,9 @@ export default async function DashboardPage() {
             <h2 className="font-bold text-lg text-[#1F2937] mb-4">Station Overview</h2>
             <div className="space-y-4">
               {projects.length === 0 ? (
-                <p className="text-[#9CA3AF] text-sm">No stations online yet — check back soon.</p>
+                <div className="bg-white rounded-2xl p-8 shadow-[0_2px_8px_rgba(0,0,0,0.05)] text-center text-[#9CA3AF]">
+                  <p>No stations online yet — check back soon.</p>
+                </div>
               ) : projects.map((project) => {
                 const pct = Math.min(Math.round((project.raised / project.goal) * 100), 100);
                 const statusColor = STATUS_COLORS[project.status] ?? "#6B7280";
