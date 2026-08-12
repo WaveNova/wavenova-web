@@ -109,6 +109,13 @@ export default function DonatePanel({ open, onClose, bankInfo }: Props) {
       onClick={handleBackdropClick}
       onClose={onClose}
       style={{
+        // Tailwind v4 Preflight resets margin to 0, which breaks the browser's
+        // native margin:auto centering for <dialog>. Must set position explicitly.
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%,-50%)',
+        margin: 0,
         border: 'none',
         borderRadius: 4,
         padding: 0,
