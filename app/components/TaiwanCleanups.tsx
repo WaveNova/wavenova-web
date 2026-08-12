@@ -106,12 +106,17 @@ function EventCard({ event, t }: CardProps) {
 export default function TaiwanCleanups() {
   const t = useTranslations('taiwan');
   const [events, setEvents] = useState<TaiwanEvent[]>([]);
+  const [calendarUrl, setCalendarUrl] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     fetch('/api/taiwan-events')
       .then((r) => r.json())
-      .then((d) => { setEvents(d.events ?? []); setLoaded(true); })
+      .then((d) => {
+        setEvents(d.events ?? []);
+        setCalendarUrl(d.calendarUrl ?? null);
+        setLoaded(true);
+      })
       .catch(() => setLoaded(true));
   }, []);
 
@@ -187,10 +192,10 @@ export default function TaiwanCleanups() {
           ))}
         </div>
 
-        {events.length > 0 && (
+        {events.length > 0 && calendarUrl && (
           <p style={{ marginTop: 24 }}>
             <a
-              href="https://lu.ma/wavenova"
+              href={calendarUrl}
               target="_blank"
               rel="noopener noreferrer"
               style={{

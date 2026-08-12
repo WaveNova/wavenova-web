@@ -28,62 +28,103 @@ export type TaiwanEvent = {
   isPast: boolean;
 };
 
+const BASE = 'https://api.lu.ma/public/v1';
+
+function lumaHeaders(key: string) {
+  return { 'x-luma-api-key': key };
+}
+
+function toTaiwanEvent(event: LumaEvent, now: Date): TaiwanEvent {
+  const geo = event.geo_address_info;
+  return {
+    id: event.api_id,
+    name: event.name,
+    startAt: event.start_at,
+    url: event.url,
+    locationLabel: [geo?.city, geo?.region].filter(Boolean).join(' · ') || '',
+    spotsTotal: event.ticket_info?.spots_total ?? null,
+    spotsRemaining: event.ticket_info?.spots_remaining ?? null,
+    isPast: new Date(event.start_at) <= now,
+  };
+}
+
+// Two targeted requests instead of fetching an unordered batch and filtering
+// client-side. Luma's default order is not guaranteed by time, so fetching
+// the first N items can miss the truly upcoming events entirely.
+async function fetchEvents(
+  calendarId: string,
+  apiKey: string,
+  direction: 'upcoming' | 'past',
+  now: Date,
+): Promise<LumaEvent[]> {
+  const nowIso = now.toISOString();
+  const params = new URLSearchParams({
+    calendar_api_id: calendarId,
+    sort_column: 'start_at',
+    sort_direction: direction === 'upcoming' ? 'asc' : 'desc',
+    pagination_limit: '3',
+    ...(direction === 'upcoming' ? { after: nowIso } : { before: nowIso }),
+  });
+
+  const res = await fetch(`${BASE}/calendar/list-events?${params}`, {
+    headers: lumaHeaders(apiKey),
+    next: { revalidate: 3600 },
+  });
+
+  if (!res.ok) {
+    console.error(`[taiwan-events] list-events(${direction}) ${res.status}:`, await res.text());
+    return [];
+  }
+
+  const data = await res.json();
+  return (data?.entries ?? []).map((e: { event: LumaEvent }) => e.event);
+}
+
+// Fetch the calendar's own public URL so TaiwanCleanups can link to it.
+// Fails gracefully — returns null if the endpoint isn't available on the
+// legacy host (api.lu.ma), so the "view all" link simply won't render.
+async function fetchCalendarUrl(calendarId: string, apiKey: string): Promise<string | null> {
+  try {
+    const res = await fetch(
+      `${BASE}/calendar/get?calendar_api_id=${calendarId}`,
+      { headers: lumaHeaders(apiKey), next: { revalidate: 3600 } },
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    // Response shape may be { calendar: { url } } or { url } depending on version
+    return (data?.calendar?.url ?? data?.url ?? null) as string | null;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET() {
   const apiKey = process.env.LUMA_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ events: [] }, { status: 200 });
+    return NextResponse.json({ events: [], calendarUrl: null });
   }
 
-  const calendarApiId = process.env.LUMA_CALENDAR_ID ?? 'cal-vR9ilrlftFoUiDt';
+  const calendarId = process.env.LUMA_CALENDAR_ID ?? 'cal-vR9ilrlftFoUiDt';
+  const now = new Date();
 
   try {
-    // Try upcoming events first
-    const upcomingRes = await fetch(
-      `https://api.lu.ma/public/v1/calendar/list-events?calendar_api_id=${calendarApiId}&pagination_limit=10`,
-      {
-        headers: { 'x-luma-api-key': apiKey },
-        next: { revalidate: 3600 },
-      }
-    );
+    // Upcoming events and calendar URL fetched in parallel
+    const [upcomingEvents, calendarUrl] = await Promise.all([
+      fetchEvents(calendarId, apiKey, 'upcoming', now),
+      fetchCalendarUrl(calendarId, apiKey),
+    ]);
 
-    if (!upcomingRes.ok) {
-      console.error('[taiwan-events] Luma API error:', upcomingRes.status, await upcomingRes.text());
-      return NextResponse.json({ events: [] });
-    }
+    // If no upcoming events, fall back to the 3 most recent past events
+    const source =
+      upcomingEvents.length > 0
+        ? upcomingEvents
+        : await fetchEvents(calendarId, apiKey, 'past', now);
 
-    const data = await upcomingRes.json();
-    const allEntries: { event: LumaEvent }[] = data?.entries ?? [];
-    const now = new Date();
+    const events: TaiwanEvent[] = source.map((e) => toTaiwanEvent(e, now));
 
-    const upcoming = allEntries
-      .filter((e) => new Date(e.event.start_at) > now)
-      .slice(0, 3);
-
-    const source = upcoming.length > 0
-      ? upcoming
-      : allEntries
-          .filter((e) => new Date(e.event.start_at) <= now)
-          .sort((a, b) => new Date(b.event.start_at).getTime() - new Date(a.event.start_at).getTime())
-          .slice(0, 3);
-
-    const events: TaiwanEvent[] = source.map(({ event }) => {
-      const geo = event.geo_address_info;
-      const locationLabel = [geo?.city, geo?.region].filter(Boolean).join(' · ') || '';
-      return {
-        id: event.api_id,
-        name: event.name,
-        startAt: event.start_at,
-        url: event.url,
-        locationLabel,
-        spotsTotal: event.ticket_info?.spots_total ?? null,
-        spotsRemaining: event.ticket_info?.spots_remaining ?? null,
-        isPast: new Date(event.start_at) <= now,
-      };
-    });
-
-    return NextResponse.json({ events });
+    return NextResponse.json({ events, calendarUrl });
   } catch (err) {
     console.error('[taiwan-events] fetch error:', err);
-    return NextResponse.json({ events: [] });
+    return NextResponse.json({ events: [], calendarUrl: null });
   }
 }
