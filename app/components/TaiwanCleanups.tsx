@@ -18,14 +18,94 @@ function EventCard({ event, t }: CardProps) {
   const isOpen = !event.isPast && (event.spotsRemaining === null || event.spotsRemaining > 0);
 
   return (
+    // Flex row: text content on the left, thumbnail on the right
     <div style={{
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'row',
+      alignItems: 'stretch',
       background: '#FFFFFF',
       border: '1px solid rgba(10,22,40,.12)',
       borderRadius: 2,
       overflow: 'hidden',
     }}>
+      {/* Text content — takes all remaining width */}
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 22 }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: 12,
+          fontFamily: 'var(--font-jetbrains-mono), monospace',
+          fontSize: 10.5,
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase' as const,
+        }}>
+          {isOpen ? (
+            <span style={{
+              padding: '4px 8px',
+              borderRadius: 2,
+              background: 'var(--navy-800)',
+              color: '#F5F7F8',
+            }}>
+              {t('badgeOpen')}
+            </span>
+          ) : (
+            <span style={{
+              padding: '4px 8px',
+              borderRadius: 2,
+              border: '1px solid rgba(10,22,40,.2)',
+              color: '#3F5468',
+            }}>
+              {event.name.match(/Cleanup \d+\.?\d*/)?.[0] ?? ''}
+            </span>
+          )}
+          <span style={{ color: '#3F5468' }}>
+            {formatDate(event.startAt)}{event.locationLabel ? ` · ${event.locationLabel}` : ''}
+          </span>
+        </div>
+
+        <h3 style={{
+          margin: '20px 0 0',
+          fontFamily: "'DM Serif Display', 'Noto Serif TC', serif",
+          fontWeight: 400,
+          fontSize: 19,
+          lineHeight: 1.35,
+          color: 'var(--navy-800)',
+        }}>
+          {event.name}
+        </h3>
+
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          gap: 12,
+          marginTop: 'auto',
+          paddingTop: 18,
+          fontFamily: 'var(--font-jetbrains-mono), monospace',
+          fontSize: 11.5,
+          letterSpacing: '0.05em',
+          color: 'var(--navy-800)',
+        }}>
+          {event.spotsTotal !== null && (
+            <span>
+              {event.spotsTotal}{' '}
+              <span style={{ color: '#3F5468' }}>{t('spots')}</span>
+            </span>
+          )}
+          {isOpen && (
+            <a
+              href={event.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'var(--navy-800)', fontWeight: 500, borderBottom: '1px solid rgba(10,22,40,.3)', textDecoration: 'none' }}
+            >
+              {t('signUp')}
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Thumbnail — 96×96 square, only when coverUrl present */}
       {event.coverUrl && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -34,88 +114,16 @@ function EventCard({ event, t }: CardProps) {
           aria-hidden="true"
           style={{
             display: 'block',
-            width: '100%',
-            aspectRatio: '16 / 9',
-            objectFit: 'cover',
+            width: 96,
+            height: 96,
             flexShrink: 0,
+            objectFit: 'cover',
+            alignSelf: 'center',
+            margin: '0 16px 0 0',
+            borderRadius: 2,
           }}
         />
       )}
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 22 }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: 12,
-        fontFamily: 'var(--font-jetbrains-mono), monospace',
-        fontSize: 10.5,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase' as const,
-      }}>
-        {isOpen ? (
-          <span style={{
-            padding: '4px 8px',
-            borderRadius: 2,
-            background: 'var(--navy-800)',
-            color: '#F5F7F8',
-          }}>
-            {t('badgeOpen')}
-          </span>
-        ) : (
-          <span style={{
-            padding: '4px 8px',
-            borderRadius: 2,
-            border: '1px solid rgba(10,22,40,.2)',
-            color: '#3F5468',
-          }}>
-            {event.name.match(/Cleanup \d+\.?\d*/)?.[0] ?? ''}
-          </span>
-        )}
-        <span style={{ color: '#3F5468' }}>
-          {formatDate(event.startAt)}{event.locationLabel ? ` · ${event.locationLabel}` : ''}
-        </span>
-      </div>
-
-      <h3 style={{
-        margin: '20px 0 0',
-        fontFamily: "'DM Serif Display', 'Noto Serif TC', serif",
-        fontWeight: 400,
-        fontSize: 19,
-        lineHeight: 1.35,
-        color: 'var(--navy-800)',
-      }}>
-        {event.name}
-      </h3>
-
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        gap: 12,
-        marginTop: 'auto',
-        paddingTop: 18,
-        fontFamily: 'var(--font-jetbrains-mono), monospace',
-        fontSize: 11.5,
-        letterSpacing: '0.05em',
-        color: 'var(--navy-800)',
-      }}>
-        {event.spotsTotal !== null && (
-          <span>
-            {event.spotsTotal}{' '}
-            <span style={{ color: '#3F5468' }}>{t('spots')}</span>
-          </span>
-        )}
-        {isOpen && (
-          <a
-            href={event.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ color: 'var(--navy-800)', fontWeight: 500, borderBottom: '1px solid rgba(10,22,40,.3)', textDecoration: 'none' }}
-          >
-            {t('signUp')}
-          </a>
-        )}
-      </div>
-      </div>  {/* end inner padding div */}
     </div>
   );
 }
