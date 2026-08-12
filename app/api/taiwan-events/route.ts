@@ -22,6 +22,7 @@ export type TaiwanEvent = {
   name: string;
   startAt: string;
   url: string;
+  coverUrl: string | null;
   locationLabel: string;
   spotsTotal: number | null;
   spotsRemaining: number | null;
@@ -41,6 +42,7 @@ function toTaiwanEvent(event: LumaEvent, now: Date): TaiwanEvent {
     name: event.name,
     startAt: event.start_at,
     url: event.url,
+    coverUrl: event.cover_url ?? null,
     locationLabel: [geo?.city, geo?.region].filter(Boolean).join(' · ') || '',
     spotsTotal: event.ticket_info?.spots_total ?? null,
     spotsRemaining: event.ticket_info?.spots_remaining ?? null,
@@ -81,21 +83,36 @@ async function fetchEvents(
 }
 
 // Fetch the calendar's own public URL so TaiwanCleanups can link to it.
-// Fails gracefully — returns null if the endpoint isn't available on the
-// legacy host (api.lu.ma), so the "view all" link simply won't render.
+// Tries the official Luma host first (public-api.luma.com, per Luma docs),
+// then falls back to the legacy host (api.lu.ma) that list-events uses.
+// Returns null only if both fail — the "view all" link won't render in that case.
 async function fetchCalendarUrl(calendarId: string, apiKey: string): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `${BASE}/calendar/get?calendar_api_id=${calendarId}`,
-      { headers: lumaHeaders(apiKey), next: { revalidate: 3600 } },
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    // Response shape may be { calendar: { url } } or { url } depending on version
-    return (data?.calendar?.url ?? data?.url ?? null) as string | null;
-  } catch {
-    return null;
+  const candidates = [
+    // Official endpoint (per Luma docs: GET /v1/calendars/get)
+    `https://public-api.luma.com/v1/calendars/get?calendar_api_id=${calendarId}`,
+    // Legacy endpoint — same host as list-events, kept as fallback
+    `${BASE}/calendar/get?calendar_api_id=${calendarId}`,
+  ];
+
+  for (const url of candidates) {
+    try {
+      const res = await fetch(url, {
+        headers: lumaHeaders(apiKey),
+        next: { revalidate: 3600 },
+      });
+      if (!res.ok) {
+        console.warn(`[taiwan-events] calendar/get non-OK from ${url}: ${res.status}`);
+        continue;
+      }
+      const data = await res.json();
+      // Response shape may be { calendar: { url } } or { url } depending on version
+      const calUrl: string | null = data?.calendar?.url ?? data?.url ?? null;
+      if (calUrl) return calUrl;
+    } catch (e) {
+      console.warn(`[taiwan-events] calendar/get error from ${url}:`, e);
+    }
   }
+  return null;
 }
 
 export async function GET() {

@@ -24,8 +24,24 @@ function EventCard({ event, t }: CardProps) {
       background: '#FFFFFF',
       border: '1px solid rgba(10,22,40,.12)',
       borderRadius: 2,
-      padding: 22,
+      overflow: 'hidden',
     }}>
+      {event.coverUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={event.coverUrl}
+          alt=""
+          aria-hidden="true"
+          style={{
+            display: 'block',
+            width: '100%',
+            aspectRatio: '16 / 9',
+            objectFit: 'cover',
+            flexShrink: 0,
+          }}
+        />
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: 22 }}>
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -99,6 +115,7 @@ function EventCard({ event, t }: CardProps) {
           </a>
         )}
       </div>
+      </div>  {/* end inner padding div */}
     </div>
   );
 }
