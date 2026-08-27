@@ -76,13 +76,9 @@
     "donateBody": "Transfer to the Yayasan account via Wise or PayPal, tag a station, and receive a receipt plus quarterly reports.",
     "donateCta": "View transfer details →",
     "memberTitle": "Subscription Support",
-    "memberBadge": "Coming soon",
-    "memberBody": "Card payments are still in application.",
-    "memberCta": "Leave your email, we'll tell you →",
-    "memberPlaceholder": "your@email.com",
-    "memberSubmit": "Notify me",
-    "memberSuccess": "Thanks — we'll let you know the moment it's live.",
-    "memberError": "Something went wrong. Please try again."
+    "memberBadge": "Open now",
+    "memberBody": "Five tiers from NT$360/month, with a monthly \"ocean receipt\" emailed to you.",
+    "memberCta": "Support on Zeczec →"
   },
   "donate": {
     "heading": "Bank transfer details",

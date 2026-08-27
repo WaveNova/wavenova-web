@@ -76,13 +76,9 @@
     "donateBody": "透過 Wise 或 PayPal 轉帳到財團法人帳戶，標記指定分類站，即可獲得收據與每季報告。",
     "donateCta": "查看匯款資訊 →",
     "memberTitle": "訂閱支持",
-    "memberBadge": "即將推出",
-    "memberBody": "信用卡付款功能仍在申請中。",
-    "memberCta": "留下 Email，上線通知你 →",
-    "memberPlaceholder": "your@email.com",
-    "memberSubmit": "訂閱通知",
-    "memberSuccess": "感謝訂閱，上線時第一時間通知你。",
-    "memberError": "發生錯誤，請再試一次。"
+    "memberBadge": "開放中",
+    "memberBody": "五種方案，NT$360 起，每月收到一封海洋收據。",
+    "memberCta": "前往嘖嘖贊助 →"
   },
   "donate": {
     "heading": "匯款資訊",
