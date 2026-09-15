@@ -3,16 +3,21 @@ import Image from 'next/image';
 import {
   PARTNER_TIER_ORDER,
   partnersByTier,
+  type PartnerLogo,
   type PartnerTier,
 } from '../../lib/partner-logos';
 
 /**
- * Partner logo wall (PRD v1.19 §14) — three tiers, grayscale with colour on
- * hover, placed at the very bottom of the page just before the Footer.
+ * Partner logo wall (PRD v1.20 §14) — three tiers, placed at the very bottom
+ * of the page just before the Footer.
  *
  * Pure static data (`lib/partner-logos.ts`): no API call, no Supabase query.
- * Server Component — the hover treatment is CSS-only (`.wn-partner-logo`),
- * so no client-side JavaScript is needed.
+ * Server Component — the marquee is CSS-only (`.wn-marquee`), so no
+ * client-side JavaScript is shipped for it.
+ *
+ * Layout per tier:
+ *   - cleanup (11 logos) → single seamless auto-scrolling row
+ *   - founding / lombok (3 each) → static grid, they fit on one line
  */
 
 const TIER_LABEL_KEY: Record<PartnerTier, string> = {
@@ -20,6 +25,99 @@ const TIER_LABEL_KEY: Record<PartnerTier, string> = {
   cleanup: 'cleanupTitle',
   lombok: 'lombokTitle',
 };
+
+/** Logos scroll as one row, so each item needs a fixed, uniform footprint. */
+const MARQUEE_ITEM_WIDTH = 150;
+const MARQUEE_ITEM_GAP = 40;
+const LOGO_BOX_HEIGHT = 72;
+
+function LogoImage({ partner }: { partner: PartnerLogo }) {
+  return (
+    <Image
+      // Paths contain spaces and CJK characters; encode so the generated URL
+      // stays valid.
+      src={encodeURI(partner.logoPath)}
+      alt={partner.name}
+      width={MARQUEE_ITEM_WIDTH}
+      height={LOGO_BOX_HEIGHT}
+      className={partner.invert ? 'wn-partner-logo-invert' : undefined}
+      style={{
+        // Crop tight to the artwork: scale to fit without letterboxing.
+        maxWidth: '100%',
+        maxHeight: '100%',
+        width: 'auto',
+        height: 'auto',
+        objectFit: 'contain',
+      }}
+    />
+  );
+}
+
+function StaticGrid({ partners }: { partners: PartnerLogo[] }) {
+  return (
+    <ul style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+      gap: 'clamp(16px,2.5vw,32px)',
+      margin: 0,
+      padding: 0,
+      listStyle: 'none',
+      alignItems: 'center',
+    }}>
+      {partners.map((partner) => (
+        <li
+          key={partner.logoPath}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: LOGO_BOX_HEIGHT,
+          }}
+        >
+          <LogoImage partner={partner} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Marquee({ partners }: { partners: PartnerLogo[] }) {
+  const itemStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: '0 0 auto',
+    width: MARQUEE_ITEM_WIDTH,
+    height: LOGO_BOX_HEIGHT,
+    // Uniform margin on every item (not `gap`) keeps both halves of the track
+    // exactly equal, which is what makes the -50% loop seamless.
+    marginRight: MARQUEE_ITEM_GAP,
+  } as const;
+
+  return (
+    <div className="wn-marquee">
+      <ul className="wn-marquee-track" style={{ margin: 0, padding: 0, listStyle: 'none' }}>
+        {partners.map((partner) => (
+          <li key={partner.logoPath} style={itemStyle}>
+            <LogoImage partner={partner} />
+          </li>
+        ))}
+        {/* Second pass purely to make the loop seamless. Hidden from assistive
+            tech so the same partners are not announced twice. */}
+        {partners.map((partner) => (
+          <li
+            key={`dup-${partner.logoPath}`}
+            style={itemStyle}
+            className="wn-marquee-duplicate"
+            aria-hidden="true"
+          >
+            <LogoImage partner={partner} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 export default function PartnerLogos() {
   const t = useTranslations('partners');
@@ -77,50 +175,9 @@ export default function PartnerLogos() {
                 {t(TIER_LABEL_KEY[tier])}
               </h3>
 
-              <ul style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                gap: 'clamp(16px,2.5vw,32px)',
-                margin: 0,
-                padding: 0,
-                listStyle: 'none',
-                alignItems: 'center',
-              }}>
-                {partners.map((partner) => (
-                  <li
-                    key={partner.logoPath}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: 72,
-                    }}
-                  >
-                    <Image
-                      // Paths contain spaces and CJK characters; encode so the
-                      // generated URL stays valid.
-                      src={encodeURI(partner.logoPath)}
-                      alt={partner.name}
-                      width={150}
-                      height={72}
-                      className={
-                        partner.invert
-                          ? 'wn-partner-logo wn-partner-logo-invert'
-                          : 'wn-partner-logo'
-                      }
-                      style={{
-                        // Crop tight to the artwork: scale to fit the cell
-                        // without letterboxing or stretching.
-                        maxWidth: '100%',
-                        maxHeight: '100%',
-                        width: 'auto',
-                        height: 'auto',
-                        objectFit: 'contain',
-                      }}
-                    />
-                  </li>
-                ))}
-              </ul>
+              {tier === 'cleanup'
+                ? <Marquee partners={partners} />
+                : <StaticGrid partners={partners} />}
             </div>
           );
         })}

@@ -173,33 +173,46 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .wn-count-up, .wn-pulse-dot, .count-up, .pulse-dot { animation: none; }
+  /* Marquee stops. The row then scrolls manually so every logo is still
+     reachable, and the duplicated half is dropped so nothing shows twice. */
+  .wn-marquee-track { animation: none; }
+  .wn-marquee { overflow-x: auto; }
+  .wn-marquee-duplicate { display: none; }
   * { transition-duration: 1ms !important; }
 }
 
-/* Partner logo wall (PRD §14): grayscale by default for a single consistent
-   tone across mixed-quality brand assets; original colour on hover/focus. */
-.wn-partner-logo {
-  filter: grayscale(1);
-  opacity: 0.62;
-  transition: filter var(--dur-base) var(--ease-standard),
-              opacity var(--dur-base) var(--ease-standard);
-}
+/* Partner logo wall (PRD v1.20 §14.1): logos always render in their original
+   colours — the earlier grayscale-with-hover-reveal treatment was removed. */
 
-.wn-partner-logo:hover,
-.wn-partner-logo:focus-visible {
-  filter: grayscale(0);
-  opacity: 1;
-}
-
-/* White-only artwork: inverted so it stays legible on the light panel.
-   Invert is kept in both states — dropping it on hover would render the logo
-   white-on-white (i.e. invisible), which defeats the hover reveal. */
+/* White-only artwork would be invisible on the light panel, so it is inverted
+   purely to stay legible. Only applied to logos with no coloured content. */
 .wn-partner-logo-invert {
-  filter: grayscale(1) invert(1);
+  filter: invert(1);
 }
 
-.wn-partner-logo-invert:hover,
-.wn-partner-logo-invert:focus-visible {
-  filter: invert(1);
-  opacity: 1;
+/* PRD v1.20 §14.2: Cleanup partners scroll as one seamless row.
+   The track holds the list twice, so translating by exactly -50% lands on the
+   start of the duplicate and the loop repeats with no visible seam. Item
+   spacing uses a uniform per-item margin rather than `gap`: `gap` would add
+   spacing between items only (n-1 gaps), making the two halves unequal and
+   causing the loop to drift. */
+.wn-marquee {
+  overflow: hidden;
+}
+
+.wn-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: wn-marquee 45s linear infinite;
+}
+
+/* Let a viewer stop the row to actually look at (or tab to) a logo. */
+.wn-marquee:hover .wn-marquee-track,
+.wn-marquee:focus-within .wn-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes wn-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
