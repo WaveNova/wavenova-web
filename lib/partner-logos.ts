@@ -124,14 +124,18 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
   {
     name: 'Eco Desa',
     tier: 'lombok',
-    logoPath: '/partners/lombokPartners/671229981_18112315591718772_2029505731610451272_n.jpg',
+    // Background removed from the original white-square JPG (PRD v1.22 §14.7);
+    // alpha solved per pixel so the anti-aliased edges survive, then trimmed
+    // tight to the artwork.
+    logoPath: '/partners/lombokPartners/EcoDesa.png',
   },
   {
     name: 'Honest Made',
     tier: 'lombok',
-    // File is named .jpeg but is actually a PNG with a real alpha channel.
-    logoPath: '/partners/lombokPartners/Logo_White_woBG.jpeg',
-    invert: true,
+    // Blue version (PRD v1.22 §14.4) — shown in its original colour, so the
+    // previous `invert` (which existed only to make the white version visible)
+    // is no longer needed.
+    logoPath: '/partners/lombokPartners/HonestMade.png',
   },
 ];
 
