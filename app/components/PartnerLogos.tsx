@@ -32,7 +32,7 @@ const MARQUEE_ITEM_GAP = 40;
 const LOGO_BOX_HEIGHT = 72;
 
 function LogoImage({ partner }: { partner: PartnerLogo }) {
-  return (
+  const img = (
     <Image
       // Paths contain spaces and CJK characters; encode so the generated URL
       // stays valid.
@@ -50,6 +50,25 @@ function LogoImage({ partner }: { partner: PartnerLogo }) {
         objectFit: 'contain',
       }}
     />
+  );
+
+  if (!partner.darkChip) return img;
+
+  // Dark tile for white-on-dark artwork, so its real colours survive.
+  return (
+    <span style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      height: '100%',
+      padding: '10px 14px',
+      borderRadius: 4,
+      background: 'var(--navy-800)',
+      boxSizing: 'border-box',
+    }}>
+      {img}
+    </span>
   );
 }
 

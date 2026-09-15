@@ -21,10 +21,16 @@ export type PartnerLogo = {
   logoPath: string;
   /**
    * Logo artwork is white-only (no dark content), so it would be invisible on
-   * the light panel. Rendered inverted to stay legible. Verified per-file by
-   * measuring opaque-pixel luminance, not guessed from the filename.
+   * the light panel. Verified per-file by measuring opaque-pixel luminance,
+   * not guessed from the filename.
+   *
+   * `invert` flips it to dark — only safe for artwork with no colour, since
+   * inverting a colour would misrepresent the brand.
+   * `darkChip` instead sits the logo on a dark tile, so coloured white-on-dark
+   * artwork keeps its true colours (PRD v1.20 §14.1 requires original colours).
    */
   invert?: boolean;
+  darkChip?: boolean;
 };
 
 export const PARTNER_LOGOS: PartnerLogo[] = [
@@ -55,7 +61,9 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
     name: 'Revival',
     tier: 'cleanup',
     logoPath: '/partners/cleanupPartners/REVIVAL_RGB_logo_transparent.png',
-    invert: true,
+    // White wordmark with an orange slash. Inverting would turn the orange
+    // cyan, so it sits on a dark chip and keeps its real colours instead.
+    darkChip: true,
   },
   {
     name: '冰茶專賣 Iced Tea Shop',
