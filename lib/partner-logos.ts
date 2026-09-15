@@ -20,6 +20,10 @@ export type PartnerLogo = {
   /** Path under `public/`. May contain spaces/CJK — encode before use in src. */
   logoPath: string;
   /**
+   * Currently unused — kept because it is still the correct treatment for
+   * white-on-transparent artwork, and Revival may need it back if its contrast
+   * against the light panel proves too weak.
+   *
    * Sit this logo on its own dark tile (--navy-800 / #0A1628), sized to the
    * logo card only — not the row, not the section.
    *
@@ -63,10 +67,12 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
   {
     name: 'Revival',
     tier: 'cleanup',
+    // White wordmark with an orange slash, on a transparent background. Shown
+    // with no treatment at all: no invert (it would turn the orange cyan) and
+    // no dark chip (the black tile read as a heavy box against the light
+    // panel). Contrast against --teal-200 is therefore low — a dark-artwork
+    // version from Revival is the only thing that would fix that properly.
     logoPath: '/partners/cleanupPartners/REVIVAL_RGB_logo_transparent.png',
-    // White wordmark with an orange slash. Inverting would turn the orange
-    // cyan, so it sits on a dark chip and keeps its real colours instead.
-    darkChip: true,
   },
   {
     name: '冰茶專賣 Iced Tea Shop',
