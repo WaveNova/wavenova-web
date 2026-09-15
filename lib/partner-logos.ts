@@ -20,16 +20,19 @@ export type PartnerLogo = {
   /** Path under `public/`. May contain spaces/CJK — encode before use in src. */
   logoPath: string;
   /**
-   * Logo artwork is white-only (no dark content), so it would be invisible on
-   * the light panel. Verified per-file by measuring opaque-pixel luminance,
-   * not guessed from the filename.
+   * Sit this logo on its own dark tile (--navy-800 / #0A1628), sized to the
+   * logo card only — not the row, not the section.
    *
-   * `invert` flips it to dark — only safe for artwork with no colour, since
-   * inverting a colour would misrepresent the brand.
-   * `darkChip` instead sits the logo on a dark tile, so coloured white-on-dark
-   * artwork keeps its true colours (PRD v1.20 §14.1 requires original colours).
+   * Use it when, and only when, the file is genuinely "transparent background +
+   * white artwork", which would otherwise be invisible on the light panel.
+   * Check the file itself rather than how it looks: artwork that merely appears
+   * pale may actually be an opaque white block with dark content, which needs
+   * no treatment at all.
+   *
+   * There is deliberately no `invert` option. Inverting shifts colours (it
+   * turned Revival's orange slash cyan) and, applied to a file that carries its
+   * own white background block, flips that block to a solid black rectangle.
    */
-  invert?: boolean;
   darkChip?: boolean;
 };
 

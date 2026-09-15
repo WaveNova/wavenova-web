@@ -31,16 +31,34 @@ const MARQUEE_ITEM_WIDTH = 150;
 const MARQUEE_ITEM_GAP = 40;
 const LOGO_BOX_HEIGHT = 72;
 
+/**
+ * Encode each path segment separately.
+ *
+ * `encodeURI` is not enough: it leaves `+` untouched, and the server then reads
+ * `Logotype color + black.svg` as a space, so the file 404s. Verified against
+ * the deployment — `...color%20+%20black.svg` → 404, `...color%20%2B%20black.svg`
+ * → 200. `encodeURIComponent` escapes `+` (and spaces, and the em-dash) while
+ * splitting on "/" keeps the separators intact.
+ */
+function encodeLogoPath(path: string): string {
+  return path.split('/').map(encodeURIComponent).join('/');
+}
+
 function LogoImage({ partner }: { partner: PartnerLogo }) {
+  // Next.js' image optimizer rejects SVG unless `dangerouslyAllowSVG` is set —
+  // confirmed on the deployment, where every SVG returns 400
+  // INVALID_IMAGE_OPTIMIZE_REQUEST while PNGs return 200. SVG is already
+  // resolution-independent and tiny, so serve it directly instead of enabling
+  // that flag globally for every image on the site.
+  const isSvg = partner.logoPath.toLowerCase().endsWith('.svg');
+
   const img = (
     <Image
-      // Paths contain spaces and CJK characters; encode so the generated URL
-      // stays valid.
-      src={encodeURI(partner.logoPath)}
+      src={encodeLogoPath(partner.logoPath)}
       alt={partner.name}
       width={MARQUEE_ITEM_WIDTH}
       height={LOGO_BOX_HEIGHT}
-      className={partner.invert ? 'wn-partner-logo-invert' : undefined}
+      unoptimized={isSvg}
       style={{
         // Crop tight to the artwork: scale to fit without letterboxing.
         maxWidth: '100%',
@@ -146,7 +164,9 @@ export default function PartnerLogos() {
       id="partners"
       style={{
         padding: 'clamp(64px,8vw,108px) clamp(20px,5vw,40px)',
-        background: '#FFFFFF',
+        // PRD v1.24 §14.6: the whole Partners block — kicker, heading and all
+        // three tiers — shares one brand-tinted background, not just Cleanup.
+        background: 'var(--teal-200)',
         color: 'var(--navy-800)',
         borderBottom: '1px solid rgba(126,151,172,.22)',
       }}

@@ -182,13 +182,10 @@ body {
 }
 
 /* Partner logo wall (PRD v1.20 §14.1): logos always render in their original
-   colours — the earlier grayscale-with-hover-reveal treatment was removed. */
-
-/* White-only artwork would be invisible on the light panel, so it is inverted
-   purely to stay legible. Only applied to logos with no coloured content. */
-.wn-partner-logo-invert {
-  filter: invert(1);
-}
+   colours — no grayscale, no hover reveal, and no filter-based recolouring.
+   White-only artwork is handled by placing it on a dark chip (see `darkChip`
+   in lib/partner-logos.ts) rather than inverting it, which would shift the
+   brand's colours. */
 
 /* PRD v1.20 §14.2: Cleanup partners scroll as one seamless row.
    The track holds the list twice, so translating by exactly -50% lands on the
