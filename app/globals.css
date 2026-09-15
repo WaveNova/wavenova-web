@@ -175,3 +175,53 @@ body {
   .wn-count-up, .wn-pulse-dot, .count-up, .pulse-dot { animation: none; }
   * { transition-duration: 1ms !important; }
 }
+
+/* Partner logo wall (PRD v1.20 §14.1): logos always render in their original
+   colours — no grayscale, no hover reveal, and no filter-based recolouring.
+   White-only artwork is handled by placing it on a dark chip (see `darkChip`
+   in lib/partner-logos.ts) rather than inverting it, which would shift the
+   brand's colours. */
+
+/* PRD v1.20 §14.2: Cleanup partners scroll as one seamless row.
+   The track holds the list twice, so translating by exactly -50% lands on the
+   start of the duplicate and the loop repeats with no visible seam. Item
+   spacing uses a uniform per-item margin rather than `gap`: `gap` would add
+   spacing between items only (n-1 gaps), making the two halves unequal and
+   causing the loop to drift. */
+.wn-marquee {
+  overflow: hidden;
+}
+
+.wn-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: wn-marquee 45s linear infinite;
+}
+
+/* Let a pointer user stop the row to look at a logo. Note this does not help
+   keyboard or touch users: the tiles are plain images with nothing focusable
+   inside, so :focus-within can never match, and :hover never fires on touch.
+   The reduced-motion block below is what makes the row reachable for them. */
+.wn-marquee:hover .wn-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes wn-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Reduced motion. This block MUST stay after the marquee rules above: a media
+   query adds no specificity, so declaring it earlier let the later
+   `animation`/`overflow` rules win and silently voided the whole
+   accommodation. `display` needs !important because the duplicate items carry
+   an inline `display: flex`, which no stylesheet rule can outrank otherwise. */
+@media (prefers-reduced-motion: reduce) {
+  /* Stop the scroll, and let the row be panned by hand so every logo stays
+     reachable rather than being clipped by overflow: hidden. */
+  .wn-marquee-track { animation: none; }
+  .wn-marquee { overflow-x: auto; }
+  /* The second copy exists only to make the loop seamless; with the animation
+     stopped it would just list every partner twice. */
+  .wn-marquee-duplicate { display: none !important; }
+}
