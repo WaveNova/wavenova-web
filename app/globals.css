@@ -175,3 +175,31 @@ body {
   .wn-count-up, .wn-pulse-dot, .count-up, .pulse-dot { animation: none; }
   * { transition-duration: 1ms !important; }
 }
+
+/* Partner logo wall (PRD §14): grayscale by default for a single consistent
+   tone across mixed-quality brand assets; original colour on hover/focus. */
+.wn-partner-logo {
+  filter: grayscale(1);
+  opacity: 0.62;
+  transition: filter var(--dur-base) var(--ease-standard),
+              opacity var(--dur-base) var(--ease-standard);
+}
+
+.wn-partner-logo:hover,
+.wn-partner-logo:focus-visible {
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+/* White-only artwork: inverted so it stays legible on the light panel.
+   Invert is kept in both states — dropping it on hover would render the logo
+   white-on-white (i.e. invisible), which defeats the hover reveal. */
+.wn-partner-logo-invert {
+  filter: grayscale(1) invert(1);
+}
+
+.wn-partner-logo-invert:hover,
+.wn-partner-logo-invert:focus-visible {
+  filter: invert(1);
+  opacity: 1;
+}

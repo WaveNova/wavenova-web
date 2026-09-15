@@ -91,6 +91,13 @@
     "note": "匯款完成後，請將姓名與匯款金額 email 至 hi@wavenova.org，我們會確認入帳並寄送收據與指定站點的季度報告。",
     "close": "關閉"
   },
+  "partners": {
+    "kicker": "合作夥伴",
+    "heading": "一起支持這件事的夥伴",
+    "foundingTitle": "創始夥伴",
+    "cleanupTitle": "淨灘夥伴",
+    "lombokTitle": "龍目島夥伴"
+  },
   "footer": {
     "tagline": "在台灣與印尼龍目島攔截海洋廢棄物——從淨灘到偏鄉廢棄物基礎建設。",
     "orgHeading": "關於組織",

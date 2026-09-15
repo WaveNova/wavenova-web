@@ -8,6 +8,7 @@ import VillagePlaybook from '../components/VillagePlaybook';
 import StationStatusTrack from '../components/StationStatusTrack';
 import TaiwanCleanups from '../components/TaiwanCleanups';
 import SupportBlock from '../components/SupportBlock';
+import PartnerLogos from '../components/PartnerLogos';
 import Footer from '../components/Footer';
 
 export const dynamic = 'force-dynamic';
@@ -57,6 +58,7 @@ export default async function HomePage({ params }: Props) {
         <StationStatusTrack stations={sortedStations ?? []} />
         <TaiwanCleanups />
         <SupportBlock bankInfo={BANK_INFO} />
+        <PartnerLogos />
       </main>
       <Footer />
     </>

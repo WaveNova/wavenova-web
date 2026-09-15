@@ -91,6 +91,13 @@
     "note": "After transferring, email your name and amount to hi@wavenova.org — we'll confirm receipt and send a quarterly report for your chosen station.",
     "close": "Close"
   },
+  "partners": {
+    "kicker": "Partners",
+    "heading": "The people backing this work",
+    "foundingTitle": "Founding partners",
+    "cleanupTitle": "Cleanup partners",
+    "lombokTitle": "Lombok partners"
+  },
   "footer": {
     "tagline": "Intercepting ocean plastic in Taiwan and Lombok, Indonesia — from cleanups to waste infrastructure in remote villages.",
     "orgHeading": "Organisation",
