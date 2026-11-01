@@ -2,12 +2,22 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { CalendarHeart, Footprints, Globe, Handshake } from 'lucide-react';
 import DonatePanel from './DonatePanel';
 import { MIJILY_PREORDER_URL } from '@/lib/external-links';
 
 type BankInfo = { bank: string; account: string; holder: string; swift: string };
 
 type Props = { bankInfo: BankInfo };
+
+// PRD v1.25 §15.1: one teal line icon above each card's title row.
+const iconProps = {
+  size: 24,
+  strokeWidth: 1.5,
+  color: 'var(--teal-500)',
+  'aria-hidden': true,
+  style: { display: 'block', marginBottom: 18 },
+} as const;
 
 export default function SupportBlock({ bankInfo }: Props) {
   const t = useTranslations('support');
@@ -58,6 +68,7 @@ export default function SupportBlock({ bankInfo }: Props) {
             borderRadius: 2,
             padding: 26,
           }}>
+            <Handshake {...iconProps} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <span style={{
                 fontFamily: "'DM Serif Display', 'Noto Serif TC', serif",
@@ -108,6 +119,7 @@ export default function SupportBlock({ bankInfo }: Props) {
             borderRadius: 2,
             padding: 26,
           }}>
+            <Globe {...iconProps} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <span style={{
                 fontFamily: "'DM Serif Display', 'Noto Serif TC', serif",
@@ -159,6 +171,7 @@ export default function SupportBlock({ bankInfo }: Props) {
             borderRadius: 2,
             padding: 26,
           }}>
+            <CalendarHeart {...iconProps} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <span style={{
                 fontFamily: "'DM Serif Display', 'Noto Serif TC', serif",
@@ -211,6 +224,7 @@ export default function SupportBlock({ bankInfo }: Props) {
             borderRadius: 2,
             padding: 26,
           }}>
+            <Footprints {...iconProps} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
               <span style={{
                 fontFamily: "'DM Serif Display', 'Noto Serif TC', serif",
