@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import DonatePanel from './DonatePanel';
+import { MIJILY_PREORDER_URL } from '@/lib/external-links';
 
 type BankInfo = { bank: string; account: string; holder: string; swift: string };
 
@@ -44,9 +45,8 @@ export default function SupportBlock({ bankInfo }: Props) {
           {t('heading')}
         </h2>
 
-        <div style={{
+        <div className="wn-support-grid" style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(285px, 1fr))',
           gap: 16,
           marginTop: 'clamp(36px,4.5vw,56px)',
         }}>
@@ -200,6 +200,58 @@ export default function SupportBlock({ bankInfo }: Props) {
               }}
             >
               {t('memberCta')}
+            </a>
+          </div>
+
+          {/* Mijily co-branded sandals pre-order card */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            border: '1px solid var(--teal-500)',
+            borderRadius: 2,
+            padding: 26,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <span style={{
+                fontFamily: "'DM Serif Display', 'Noto Serif TC', serif",
+                fontWeight: 400,
+                fontSize: 19,
+                color: '#F5F7F8',
+              }}>
+                {t('shoesTitle')}
+              </span>
+              <span style={{
+                fontFamily: 'var(--font-jetbrains-mono), monospace',
+                fontSize: 10.5,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase' as const,
+                color: 'var(--teal-500)',
+                whiteSpace: 'nowrap' as const,
+              }}>
+                {t('shoesBadge')}
+              </span>
+            </div>
+            <p style={{ margin: '16px 0 28px', fontSize: 15, lineHeight: 1.7, color: '#7E97AC' }}>
+              {t('shoesBody')}
+            </p>
+            <a
+              href={MIJILY_PREORDER_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                marginTop: 'auto',
+                alignSelf: 'flex-start',
+                padding: '11px 20px',
+                borderRadius: 2,
+                fontSize: 14,
+                fontWeight: 600,
+                textDecoration: 'none',
+                background: 'transparent',
+                color: 'var(--teal-500)',
+                border: '1px solid var(--teal-500)',
+              }}
+            >
+              {t('shoesCta')}
             </a>
           </div>
         </div>

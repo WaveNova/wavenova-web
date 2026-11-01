@@ -66,7 +66,7 @@
   },
   "support": {
     "kicker": "支持我們",
-    "heading": "三種支持方式",
+    "heading": "四種支持方式",
     "esgTitle": "企業 ESG 合作",
     "esgBadge": "開放中",
     "esgBody": "贊助我們的淨灘活動——讓你的品牌出現在海岸線上。",
@@ -77,8 +77,12 @@
     "donateCta": "查看匯款資訊 →",
     "memberTitle": "訂閱支持",
     "memberBadge": "開放中",
-    "memberBody": "五種方案，NT$360 起，每月收到一封海洋收據。",
-    "memberCta": "前往嘖嘖贊助 →"
+    "memberBody": "六種方案，NT$99 起，每月收到一封海洋收據。",
+    "memberCta": "前往嘖嘖贊助 →",
+    "shoesTitle": "Mijily 聯名涼拖",
+    "shoesBadge": "預購中",
+    "shoesBody": "淨灘撿回的瓶蓋交給 Mijily 回收。每賣出一雙聯名涼拖，Mijily 就撥款支持我們清除海洋垃圾。",
+    "shoesCta": "前往預購 →"
   },
   "donate": {
     "heading": "匯款資訊",
