@@ -66,7 +66,7 @@
   },
   "support": {
     "kicker": "支持我們",
-    "heading": "三種支持方式",
+    "heading": "四種支持方式",
     "esgTitle": "企業 ESG 合作",
     "esgBadge": "開放中",
     "esgBody": "贊助我們的淨灘活動——讓你的品牌出現在海岸線上。",
@@ -76,13 +76,13 @@
     "donateBody": "透過 Wise 或 PayPal 轉帳到財團法人帳戶，標記指定分類站，即可獲得收據與每季報告。",
     "donateCta": "查看匯款資訊 →",
     "memberTitle": "訂閱支持",
-    "memberBadge": "即將推出",
-    "memberBody": "信用卡付款功能仍在申請中。",
-    "memberCta": "留下 Email，上線通知你 →",
-    "memberPlaceholder": "your@email.com",
-    "memberSubmit": "訂閱通知",
-    "memberSuccess": "感謝訂閱，上線時第一時間通知你。",
-    "memberError": "發生錯誤，請再試一次。"
+    "memberBadge": "開放中",
+    "memberBody": "六種方案，NT$99 起，每月收到一封海洋收據。",
+    "memberCta": "前往嘖嘖贊助 →",
+    "shoesTitle": "Mijily 聯名涼拖",
+    "shoesBadge": "預購中",
+    "shoesBody": "淨灘撿回的瓶蓋交給 Mijily 回收。每賣出一雙聯名涼拖，Mijily 就撥款支持我們清除海洋垃圾。",
+    "shoesCta": "前往預購 →"
   },
   "donate": {
     "heading": "匯款資訊",
@@ -94,6 +94,13 @@
     "copied": "已複製",
     "note": "匯款完成後，請將姓名與匯款金額 email 至 hi@wavenova.org，我們會確認入帳並寄送收據與指定站點的季度報告。",
     "close": "關閉"
+  },
+  "partners": {
+    "kicker": "合作夥伴",
+    "heading": "一起支持這件事的夥伴",
+    "foundingTitle": "創始夥伴",
+    "cleanupTitle": "淨灘夥伴",
+    "lombokTitle": "龍目島夥伴"
   },
   "footer": {
     "tagline": "在台灣與印尼龍目島攔截海洋廢棄物——從淨灘到偏鄉廢棄物基礎建設。",
