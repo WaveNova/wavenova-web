@@ -225,3 +225,17 @@ body {
      stopped it would just list every partner twice. */
   .wn-marquee-duplicate { display: none !important; }
 }
+
+/* PRD v1.25 §15: Support block cards. 1 → 2 → 4 columns, so four cards never
+   fall into a 3 + 1 layout with one card left alone on the last row. */
+.wn-support-grid {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 600px) {
+  .wn-support-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 1024px) {
+  .wn-support-grid { grid-template-columns: repeat(4, 1fr); }
+}
